@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
+    <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+    <link rel="stylesheet" href="./fontawesome-free-6.5.1-web/css/solid.css">
+    <link rel="stylesheet" href="./fontawesome-free-6.5.1-web/css/brands.css">
+    <link rel="stylesheet" href="./fontawesome-free-6.5.1-web/css/fontawesome.css">
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    
+  </head>
+  <body>
+    <section class="py-5 text-center container">
+        <div class="row py-lg-5">
+          <div class="col-lg-6 col-md-8 mx-auto">
+            <h1 class="fw-light">Lyrics finder</h1>
+            <p class="lead text-body-secondary">Enter the phrase you remember and click the search button.</p>
+
+          </div>
+        </div>
+      </section>
+
+      <div class="container">
+        <form>
+            <div class="form-group row">
+                <label for="searchphrase" class="col-sm-2 col-form-label">Phrase:</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control col-auto" name="searchphrase" id="searchphrase" placeholder="Enter search phrase">
+                </div>
+                <button type="submit" class="btn btn-primary col-sm-1"> <i class="fa-solid fa-magnifying-glass"></i></button>
+                
+            </div>
+
+            <div class="row" id="submit-errors">
+
+            </div>
+        </form>
+
+        <div class="row text-center">
+            <span id="loader" class="hidden"><i class="fa-solid fa-spinner"></i></span>
+            <span id="done" class="hidden"><i class="fa-solid fa-check"></i></span>
+        </div>
+
+      </div>
+    
+      <div class="py-5 bg-body-tertiary">
+        <div class="container">
+    
+          <div class="row">
+            <div class="col-lg-6">
+                <p class="">Matching songs:</p>
+                <ul class="list-group" id="lyrics-list">
+                    <li class="list-group-item active">Cras justo odio</li>
+                    <li class="list-group-item">Dapibus ac facilisis in</li>
+                    <li class="list-group-item">Morbi leo risus</li>
+                    <li class="list-group-item">Porta ac consectetur ac</li>
+                    <li class="list-group-item">Vestibulum at eros</li>
+                    <li class="list-group-item">Cras justo odio</li>
+                    <li class="list-group-item">Dapibus ac facilisis in</li>
+                    <li class="list-group-item">Morbi leo risus</li>
+                    <li class="list-group-item">Porta ac consectetur ac</li>
+                    <li class="list-group-item">Vestibulum at eros</li>
+                    <li class="list-group-item">Cras justo odio</li>
+                    <li class="list-group-item">Dapibus ac facilisis in</li>
+                    <li class="list-group-item">Morbi leo risus</li>
+                    <li class="list-group-item">Porta ac consectetur ac</li>
+                    <li class="list-group-item">Vestibulum at eros</li>
+                  </ul>
+            
+            
+            </div>
+
+            
+            <div class="col-lg-6">
+                <div class="row">
+                    <p>Title: <b id="title" class="font-weight-bold">Lorem ipsum dolor sit amet</b></p>
+
+                </div>
+                <div class="row">
+                    <p id="content">
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                    </p>
+                </div>
+                
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+
+    <!-- ... -->
+    <script src="jquery-ext.js"></script>
+    <script src="form.js"></script>
+  </body>
+</html>
