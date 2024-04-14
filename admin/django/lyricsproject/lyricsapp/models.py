@@ -73,6 +73,10 @@ class Search(TimeStampedModel):
     def __str__(self):
         return self.phrase
     
+    def post_save(self, *args, **kwargs):
+        super().post_save(*args, **kwargs)
+    
+    
     class Meta:
 
         constraints = [

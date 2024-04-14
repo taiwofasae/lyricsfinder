@@ -1,9 +1,20 @@
 from django.shortcuts import render
 from .models import Book, Author, BookInstance, Genre
 from django.views import generic
-
+from django.http import HttpResponse
+from lyricsapp import dispatchers
+from embeddings import songsearch, embeddings
+import logging
+from lyricsproject import settings
 
 # Create your views here.
+
+def execute(request, search_id):
+    #dispatchers.execute_search(search_id)
+    #songsearch.execute_search(search_id)
+    #embeddings.get_embeddings_for_search_phrase(search_id)
+
+    return HttpResponse(status=200)
 
 def index(request):
     """View function for home page of site"""

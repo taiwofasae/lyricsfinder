@@ -1,7 +1,8 @@
-import database
+from . import database
 import json
 import logging
-import os
+from . import file_embeddings
+from . import models
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -9,206 +10,242 @@ load_dotenv()
 from openai import OpenAI
 client = OpenAI()
 
-def get_openai_embedding(phrases, model="text-embedding-3-small"):
+def get_openai_embeddings(phrases, model="text-embedding-3-small"):
     phrases = [text.replace("\n", " ") for text in phrases]
-    return client.embeddings.create(input = phrases, model=model).data[0].embedding
+    return [d.embedding for d in client.embeddings.create(input = phrases, model=model).data]
+
 
 API_VERSION = 'v2'
 
 def api_version():
     return API_VERSION
 
-embeddings_folder = './embeds/'
-song_folder = embeddings_folder+'song/'
-phrase_folder = embeddings_folder+'phrase/'
-def save_song_embedding_to_file(song_id, embeddings):
-    
-    with open("{0}{1}.csv".format(song_folder, song_id), 'w') as f:
-        json.dump(embeddings, f, ensure_ascii=False)
-
-def load_song_embedding_from_file(song_id):
-    
-    embeddings = []
-    try:
-        with open("{0}{1}.csv".format(song_folder, song_id), 'r') as f:
-            embeddings = json.load(f)
-    except:
-        pass
-
-    return embeddings
-
-def save_phrase_embedding_to_file(phrase_id, embeddings):
-    
-    with open("{0}{1}.csv".format(phrase_folder, phrase_id), 'w') as f:
-        json.dump(embeddings, f, ensure_ascii=False)
-
-def load_phrase_embedding_from_file(phrase_id):
-    
-    embeddings = []
-
-    try:
-        with open("{0}{1}.csv".format(phrase_folder, phrase_id), 'r') as f:
-            embeddings = json.load(f)
-    except:
-        pass
-    return embeddings
-
 def ping_db():
     return database.ping()
 
 
-def similarity_score(search_string, song_id):
-
-    return 0
-
 def create_embeddings_table():
     logging.info("Creating embeddings tables")
 
-    database.execute("""
-    CREATE TABLE lyricsapp_song_embeddings (
-                     song_id int PRIMARY KEY,
-                     song_title varchar(50) NOT NULL,
-                     serialized_embeddings longtext,
-                     foreign key (song_id) references lyricsapp_song(id)
-    );
-""")
+    database.execute(models.SongEmbedding.MysqlCommands.create_table())
     
-    database.execute("""
-    CREATE TABLE lyricsapp_phrase_embeddings (
-                     id int(11) not null PRIMARY KEY auto_increment,
-                     phrase varchar(50) NOT NULL,
-                     serialized_embeddings longtext,
-                     CONSTRAINT phrase_unique UNIQUE (phrase)
-    );
-""")
+    database.execute(models.PhraseEmbedding.MysqlCommands.create_table())
+
+    database.execute(models.SearchEmbedding.MysqlCommands.create_table())
     
 def get_phrase_id_if_exists(phrase):
     logging.info("Getting phrase details by id: {0}".format(phrase))
 
-    results = database.fetch("""
-    SELECT id from lyricsapp_phrase_embeddings where phrase = "{0}";
-""".format(phrase))
+    results = database.fetch(models.PhraseEmbedding.MysqlCommands.get_phrase_id_if_exists(phrase))
     
     return results and results[0] and results[0][0]
 
 
 def insert_or_update_phrase_embeddings(phrase, embeddings_vector):
     
+    logging.info("Checking if phrase: '{0}' exists".format(phrase))        
 
-    logging.info("Inserting/updating phrase embeddings into database")
-    
+    phrase_id = get_phrase_id_if_exists(phrase)
+
+    logging.info("Inserting/updating phrase embeddings into file")
+    if phrase_id:
+        file_embeddings.save_phrase_embedding(phrase_id, embeddings_vector)
+
     
 
     try:
-        embeddings_vec = []
-        database.execute("""
-    UPDATE lyricsapp_phrase_embeddings SET serialized_embeddings = '{1}' WHERE phrase = '{0}';
-""".format(phrase, embeddings_vec))
         
-        database.execute("""
-    INSERT INTO lyricsapp_phrase_embeddings (phrase, serialized_embeddings) VALUES ('{0}','{1}');
-""".format(phrase, embeddings_vec))
+        logging.info("Inserting/updating phrase embeddings into database")
+
+        embeddings_vec = []
+        database.execute(models.PhraseEmbedding.MysqlCommands.update_embedding(phrase, embeddings_vec))
+        
+        database.execute(models.PhraseEmbedding.MysqlCommands.insert_embedding(phrase, embeddings_vec))
         
     except:
         pass
+        #logging.error("failed insert_or_update_phrase_embeddings of phrase: '{0}'".format(phrase))
 
-    phrase_id = get_phrase_id_if_exists(phrase)
-    if phrase_id:
-        save_phrase_embedding_to_file(phrase_id, embeddings_vector)
+def insert_or_update_search_phrase_embeddings(search_id, search_phrase, embeddings_vector):
+    
+
+    logging.info("Inserting/updating search phrase embeddings into file")
+        
+    file_embeddings.save_search_phrase_embedding(search_id, embeddings_vector)
+
+
+    try:
+        
+
+        
+        logging.info("Inserting/updating search phrase embeddings into database")
+
+        embeddings_vec = []
+        database.execute(models.SearchEmbedding.MysqlCommands.update_embedding(search_id, embeddings_vec))
+        
+        database.execute(models.SearchEmbedding.MysqlCommands.insert_embedding(search_id, search_phrase, embeddings_vec))
+        
+    except:
+        pass
+        #logging.error("failed insert_or_update_phrase_embeddings of phrase: '{0}'".format(phrase))
+
+    
         
 
 def insert_or_update_song_embeddings(song_id, song_title, embeddings_vector):
     
 
+    logging.info("Inserting/updating song embeddings into file")
+    file_embeddings.save_song_embedding(song_id=song_id, embeddings=embeddings_vector)
+
+
     
-
-    logging.info("Inserting/updating song embeddings into database")
     try:
-        logging.info("Inserting/updating song embeddings into file")
-        save_song_embedding_to_file(song_id=song_id, embeddings=embeddings_vector)
 
-        embeddings_vector = []
+        embeddings_vec = []
+        logging.info("Inserting/updating song embeddings into database")
+        database.execute(models.SongEmbedding.MysqlCommands.update_embedding(song_id, song_title, embeddings_vec))
 
-        database.execute("""
-            UPDATE lyricsapp_song_embeddings SET song_title = '{1}', serialized_embeddings = '{2}' WHERE song_id = {0};;
-        """.format(song_id, song_title, embeddings_vector))
-
-        database.execute("""
-    INSERT INTO lyricsapp_song_embeddings (song_id, song_title, serialized_embeddings) VALUES ({0},'{1}','{2}');
-""".format(song_id, song_title, embeddings_vector))
+        database.execute(models.SongEmbedding.MysqlCommands.insert_embedding(song_id, song_title, embeddings_vec))
     
     except:
         pass
+        #logging.error("failed insert_or_update_song_embeddings of title: '{0}'".format(song_title))
         
 
 
 def get_embeddings_for_song(song_id):
     logging.info("retreiving embedings for song_id: {0}".format(song_id))
 
-    return load_song_embedding_from_file(song_id)
-    results = database.fetch("""
-    SELECT serialized_embeddings from lyricsapp_song_embeddings where song_id = {0};
-""".format(song_id))
+    embedding = []
+
+    logging.info("loading embedding from database")
+    # load embedding from database
+    results = database.fetch(models.SongEmbedding.MysqlCommands.get_embedding(song_id))
+    if results:
+        # deserialize json
+        embedding = json.loads(results[0] and results[0][0])
+        song_title = results[0] and results[0][1]
+
+    if not embedding:
+        logging.info("loading embedding from file")
+
+        embedding = file_embeddings.load_song_embedding(song_id)
+        if not results: # if there are no results, then insert song into database
+            logging.info("saving embedding info to database")
+            insert_or_update_song_embeddings(song_id, song_title, json.dumps([]))
     
-    return [json.loads(x[0]) for x in results]
+    if not embedding:
+        logging.info("fetching embedding from api")
+        embedding = fetch_embeddings_for_songs([song_id])[0]
+
+    return embedding
+
 
 def get_embeddings_for_phrase(phrase):
     logging.info("retreiving embedings for phrase: '{0}'".format(phrase))
 
-    results = database.fetch("""
-    SELECT id, serialized_embeddings from lyricsapp_phrase_embeddings where phrase = '{0}';
-""".format(phrase))
+    embedding = []
+
+    logging.info("Loading embedding from database")
+    results = database.fetch(models.PhraseEmbedding.MysqlCommands.get_embedding(phrase))
+    if results:
+        # deserialize json
+        phrase_id = results[0] and results[0][0]
+        embedding = json.loads(results[0] and results[0][1])
+
+        if not embedding:
+            logging.info("loading embedding from file")
+            embedding = file_embeddings.load_phrase_embedding(phrase_id)
+        
+        if not embedding:
+            logging.info("fetching embedding from api")
+            embedding = fetch_embeddings_for_phrases([phrase])[0]
+
+    return embedding
+
+def get_embeddings_for_search_phrase(search_id):
+    logging.info("retreiving embedings for search phrase: '{0}'".format(search_id))
+
+    embedding = []
+
+    logging.info("Loading embedding from database")
+    results = database.fetch(models.SearchEmbedding.MysqlCommands.get_embedding(search_id))
+    if results:
+        # deserialize json
+        embedding = json.loads(results[0] and results[0][0])
+
+    if not embedding:
+        logging.info("loading embedding from file")
+        embedding = file_embeddings.load_search_phrase_embedding(search_id)
     
-    return [load_phrase_embedding_from_file(x[0]) for x in results]
+    if not embedding:
+        logging.info("fetching embedding from api")
+        embedding = fetch_embeddings_for_search_phrases([search_id])[0]
+
+    return embedding
+
+def fetch_embeddings_for_song(song_id):
     
-    return [json.loads(x[0]) for x in results]
+
+    embeddings = []
+    logging.info("getting song details for song_id: '{0}'".format(song_id))
+    results = database.fetch(models.Song.MysqlCommands.get_song(song_id))
+
+    
+    if results:
+        (_ ,title, lyrics) = results[0]
+
+        logging.info("getting openai embeddings for title: '{0}'".format(title))
+        embeddings = get_openai_embeddings([lyrics])[0]
+
+        logging.info("inserting/updating song embeddings")
+        insert_or_update_song_embeddings(song_id, title, embeddings)
+
+    return embeddings
 
 def fetch_embeddings_for_songs(song_ids):
 
-    output = []
-
-    for id in song_ids:
-        results = database.fetch("""
-    SELECT id, title, lyrics from lyricsapp_song where id = '{0}';
-""".format(id))
-        
-        
-
-        if results:
-            (_ ,title, lyrics) = results[0]
-
-            embeddings = get_openai_embedding([lyrics])
-    
-            insert_or_update_song_embeddings(id, title, embeddings)
-
-            output += [embeddings]
-
-    return output
+    return [fetch_embeddings_for_song(id) for id in song_ids]
     
 
     
 def fetch_embeddings_for_phrases(phrases):
-    embeddings = get_openai_embedding(phrases)
+    logging.info("getting openai embeddings for {0} phrases".format(len(phrases)))
+    embeddings = get_openai_embeddings(phrases)
+
+    logging.info("saving embeddings")
     for phrase, embed in zip(phrases, embeddings):
         insert_or_update_phrase_embeddings(phrase, embed)
 
     return embeddings
 
-def refresh_embeddings_for_song(song_id):
-    embeddings = get_embeddings_for_song(song_id)
+def fetch_embeddings_for_search_phrase(search_id):
 
-    if not embeddings:
-        embeddings = fetch_embeddings_for_songs([song_id])
+    embeddings = []
+
+    logging.info("getting search phrase for search_id: '{0}'".format(search_id))
+    results = database.fetch(models.Search.MysqlCommands.get_search(search_id))
+
+    
+    if results:
+        phrase = results[0] and results[0][0]
+
+        logging.info("getting openai embeddings for search phrase: '{0}'".format(phrase))
+        embeddings = get_openai_embeddings([phrase])[0]
+
+        logging.info("inserting/updating search phrase embeddings")
+        insert_or_update_search_phrase_embeddings(search_id, phrase, embeddings)
 
     return embeddings
 
-def refresh_embeddings_for_phrase(phrase):
-    embeddings = get_embeddings_for_phrase(phrase)
 
-    if not embeddings:
-        embeddings = fetch_embeddings_for_phrases([phrase])
+def fetch_embeddings_for_search_phrases(search_ids):
+    logging.info("getting openai embeddings for {0} search phrases".format(len(search_ids)))
 
-    return embeddings
+    return [fetch_embeddings_for_search_phrase(id) for id in search_ids]
+
+
 
 
 
@@ -227,7 +264,3 @@ if __name__ == "__main__":
 #fetch_embeddings_for_phrases(["On the low by burna boy"])
 
 #print(get_phrase_id_if_exists('On the low by burna boy'))
-
-refresh_embeddings_for_song(1)
-refresh_embeddings_for_song(2)
-refresh_embeddings_for_song(3)
