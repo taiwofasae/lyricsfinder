@@ -12,6 +12,10 @@ def ping_db():
 def quick_math():
     print("7 is the answer")
 
+def execute_pending_search_phrases():
+    for search_id in get_pending_searches():
+        execute_search(search_id)
+
 def execute_search(search_id):
 
     

@@ -12,8 +12,7 @@ def execute_search(sender, instance, **kwargs):
     execute_search(instance.id)
 
 def execute_pending_search_phrases():
-    for search_id in songsearch.get_pending_searches():
-        execute_search(search_id)
+    songsearch.execute_pending_search_phrases()
 
 def execute_search(search_id):
     async_task('embeddings.songsearch.execute_search', search_id)
