@@ -1,8 +1,12 @@
 from . import database
 import json
 import logging
-from . import file_embeddings
+from . import file_embeddings, s3_embeddings
 from . import models
+from lyricsproject import settings
+
+if not settings.DEBUG:
+    file_embeddings = s3_embeddings
 
 from dotenv import load_dotenv
 load_dotenv()

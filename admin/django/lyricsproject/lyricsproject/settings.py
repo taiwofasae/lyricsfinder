@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+from . import env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +21,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--u2p9&---%h&2+uo5q2o9*)f8tmku$!*lc*zyv!gc$2!kg*r9i'
+SECRET_KEY = env.get_key('SECRET_KEY') or  'django-insecure--u2p9&---%h&2+uo5q2o9*)f8tmku$!*lc*zyv!gc$2!kg*r9i'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True if env.get_key('DEBUG') == 'True' else False
 
-ALLOWED_HOSTS = []
+allowed_hosts = env.get_key('ALLOWED_HOSTS')
+ALLOWED_HOSTS = allowed_hosts.split(',') if allowed_hosts else []
 
 
 # Application definition
@@ -86,11 +88,11 @@ DATABASES = {
         # 'ENGINE': 'django.db.backends.sqlite3',
         # 'NAME': BASE_DIR / 'db.sqlite3',
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'lyricsapp',
-        'USER': 'root',
-        'PASSWORD': 'taiwo',
-        'HOST': 'localhost',
-        'PORT': '3306'
+        'NAME': env.get_key('MYSQL_DB_NAME'),
+        'USER': env.get_key('MYSQL_DB_USER'),
+        'PASSWORD': env.get_key('MYSQL_DB_PASSWORD'),
+        'HOST': env.get_key('MYSQL_DB_HOST'),
+        'PORT': env.get_key('MYSQL_DB_PORT')
     }
 }
 
@@ -129,7 +131,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = env.get_key('STATIC_URL') or 'static/'
+
+STATIC_ROOT = env.get_key('STATIC_ROOT')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -137,14 +141,14 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 Q_CLUSTER = {
-    'name': 'MongoDB',
+    'name': env.get_key('MONGO_DB_NAME'),
     'workers': 8,
     'timeout': 60,
     'retry': 70,
     'queue_limit': 100,
     'mongo': {
-        'host': '127.0.0.1',
-        'port': 27017
+        'host': env.get_key('MONGO_DB_HOST'),
+        'port': int(env.get_key('MONGO_DB_PORT'))
     }
 }
 
@@ -168,22 +172,11 @@ LOGGING = {
     },
     "root": {
         "handlers": ["console"],
-        "level": "INFO",
+        "level": env.get_key('LOG_LEVEL') or "ERROR",
     },
 }
 
-# LOGGING = {
-#     "version": 1,
-#     "disable_existing_loggers": False,
-#     "handlers": {
-#         "console": {
-#             "class": "logging.StreamHandler",
-#         },
-#     },
-#     "loggers": {
-#         "django": {
-#             "handlers": ["console"],
-#             "level": "INFO",
-#         },
-#     },
-# }
+S3 = {
+    "FOLDER": env.get_key('S3_FOLDER'),
+    "BUCKET_NAME": env.get_key('S3_BUCKET_NAME')
+}

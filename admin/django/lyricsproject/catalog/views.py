@@ -11,7 +11,7 @@ from lyricsproject import settings
 
 def execute(request, search_id):
     #dispatchers.execute_search(search_id)
-    #songsearch.execute_pending_search_phrases()
+    songsearch.execute_pending_search_phrases()
     #songsearch.execute_search(search_id)
     #embeddings.get_embeddings_for_search_phrase(search_id)
 

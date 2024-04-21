@@ -1,20 +1,8 @@
 import mysql.connector
 import logging
+from lyricsproject import settings
 
-DATABASES = {
-    'default': {
-        # 'ENGINE': 'django.db.backends.sqlite3',
-        # 'NAME': BASE_DIR / 'db.sqlite3',
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'lyricsapp',
-        'USER': 'root',
-        'PASSWORD': 'taiwo',
-        'HOST': 'localhost',
-        'PORT': '3306'
-    }
-}
-
-db = DATABASES['default']
+db = settings.DATABASES['default']
 
 def open_connection():
     return mysql.connector.connect(
@@ -82,3 +70,10 @@ def fetch(command):
         print("Could not connect to database")
 
     return output
+
+if __name__ == "__main__":
+    logging.getLogger().setLevel(logging.INFO)
+    if ping():
+        print("mysql database connection OK")
+    else:
+        print("mysql db unreachable :(")
