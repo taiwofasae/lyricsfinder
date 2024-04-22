@@ -13,11 +13,14 @@
 - Q cluster (reddis queue/mongodb queue)
 - settings and environment variables
 - static file server
+    - staticfiles 'python migrate.py collectstatic'
     - simple development server
     - S3 for static serving
     - cloudfront
 - Embeddings
     - create embeddings table
+- Environmental variables
+    - copy .env to .env.example without the values
 
 # todo
 - make endpoint for fetching lyrics data

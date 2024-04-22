@@ -1,0 +1,1 @@
+sed 's/=.*/=CHANGE ME/' .env .env.example
