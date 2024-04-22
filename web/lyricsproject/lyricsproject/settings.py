@@ -92,7 +92,7 @@ DATABASES = {
         'USER': env.get_key('MYSQL_DB_USER'),
         'PASSWORD': env.get_key('MYSQL_DB_PASSWORD'),
         'HOST': env.get_key('MYSQL_DB_HOST'),
-        'PORT': env.get_key('MYSQL_DB_PORT')
+        'PORT': env.get_int_key('MYSQL_DB_PORT')
     }
 }
 
@@ -148,7 +148,7 @@ Q_CLUSTER = {
     'queue_limit': 100,
     'mongo': {
         'host': env.get_key('MONGO_DB_HOST'),
-        'port': int(env.get_key('MONGO_DB_PORT'))
+        'port': env.get_int_key('MONGO_DB_PORT')
     }
 }
 

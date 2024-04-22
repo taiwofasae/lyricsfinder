@@ -144,3 +144,5 @@ web/myenv/
 **/embeds/
 
 keys/
+
+myenv/
