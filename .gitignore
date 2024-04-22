@@ -137,4 +137,8 @@ GitHub.sublime-settings
 !.vscode/extensions.json 
 .history
 
+# lyricsapp
+staticfiles/
 !staticfiles/*.py
+web/myenv/
+**/embeds/
