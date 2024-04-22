@@ -8,9 +8,6 @@ from lyricsproject import settings
 if not settings.DEBUG:
     file_embeddings = s3_embeddings
 
-from dotenv import load_dotenv
-load_dotenv()
-
 from openai import OpenAI
 client = OpenAI()
 
@@ -62,13 +59,14 @@ def insert_or_update_phrase_embeddings(phrase, embeddings_vector):
         logging.info("Inserting/updating phrase embeddings into database")
 
         embeddings_vec = []
-        database.execute(models.PhraseEmbedding.MysqlCommands.update_embedding(phrase, embeddings_vec))
+        if phrase_id:
+            database.execute(models.PhraseEmbedding.MysqlCommands.update_embedding(phrase, embeddings_vec))
+        else:
+            database.execute(models.PhraseEmbedding.MysqlCommands.insert_embedding(phrase, embeddings_vec))
         
-        database.execute(models.PhraseEmbedding.MysqlCommands.insert_embedding(phrase, embeddings_vec))
-        
-    except:
-        pass
-        #logging.error("failed insert_or_update_phrase_embeddings of phrase: '{0}'".format(phrase))
+    except Exception as e:
+        logging.error(e)
+        logging.info("failed insert_or_update_phrase_embeddings of phrase: '{0}'".format(phrase))
 
 def insert_or_update_search_phrase_embeddings(search_id, search_phrase, embeddings_vector):
     
@@ -79,19 +77,17 @@ def insert_or_update_search_phrase_embeddings(search_id, search_phrase, embeddin
 
 
     try:
-        
-
-        
         logging.info("Inserting/updating search phrase embeddings into database")
 
         embeddings_vec = []
-        database.execute(models.SearchEmbedding.MysqlCommands.update_embedding(search_id, embeddings_vec))
+        if database.execute(models.SearchEmbedding.MysqlCommands.get_embedding(search_id)):
+            database.execute(models.SearchEmbedding.MysqlCommands.update_embedding(search_id, embeddings_vec))
+        else:
+            database.execute(models.SearchEmbedding.MysqlCommands.insert_embedding(search_id, search_phrase, embeddings_vec))
         
-        database.execute(models.SearchEmbedding.MysqlCommands.insert_embedding(search_id, search_phrase, embeddings_vec))
-        
-    except:
-        pass
-        #logging.error("failed insert_or_update_phrase_embeddings of phrase: '{0}'".format(phrase))
+    except Exception as e:
+        logging.error(e)
+        logging.info("failed insert_or_update_phrase_embeddings of phrase: '{0}'".format(search_phrase))
 
     
         
@@ -108,13 +104,14 @@ def insert_or_update_song_embeddings(song_id, song_title, embeddings_vector):
 
         embeddings_vec = []
         logging.info("Inserting/updating song embeddings into database")
-        database.execute(models.SongEmbedding.MysqlCommands.update_embedding(song_id, song_title, embeddings_vec))
-
-        database.execute(models.SongEmbedding.MysqlCommands.insert_embedding(song_id, song_title, embeddings_vec))
+        if database.execute(models.SongEmbedding.MysqlCommands.get_embedding(song_id)):
+            database.execute(models.SongEmbedding.MysqlCommands.update_embedding(song_id, song_title, embeddings_vec))
+        else:
+            database.execute(models.SongEmbedding.MysqlCommands.insert_embedding(song_id, song_title, embeddings_vec))
     
-    except:
-        pass
-        #logging.error("failed insert_or_update_song_embeddings of title: '{0}'".format(song_title))
+    except Exception as e:
+        logging.error(e)
+        logging.info("failed insert_or_update_song_embeddings of title: '{0}'".format(song_title))
         
 
 

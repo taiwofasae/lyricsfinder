@@ -5,9 +5,6 @@ from lyricsproject import settings
 import boto3
 from botocore.exceptions import ClientError
 
-from dotenv import load_dotenv
-load_dotenv()
-
 
 S3_BUCKET = settings.S3["BUCKET_NAME"]
 S3_FOLDER = settings.S3["FOLDER"]

@@ -1,9 +1,11 @@
 # Lyrics finder
 
 # deployment resources
+- admin app
+    - install packages and 'pip freeze > requirements.txt'
 - mysql database
     - public access
-    - create database name 'create database lyricsapp'
+    - create database name 'create database lyricsapp;'
     - migrate 'python manage.py migrate'
     - create superuser 'python migrate.py createsuperuser'
 - s3 file system
