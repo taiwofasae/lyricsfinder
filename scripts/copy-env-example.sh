@@ -1,1 +1,4 @@
-sed 's/=.*/=CHANGE ME/' .env .env.example
+# clone .env
+sed 's/=.*/=/' .env > .env.example
+# remove comments
+sed -i 's:#.*$::g' .env.example
