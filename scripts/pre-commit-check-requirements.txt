@@ -1,0 +1,15 @@
+#!/usr/local/bin/bash
+
+pip freeze > requirements_check.txt
+cmp --silent requirements_check.txt requirements.txt
+
+if [ $? -gt 0 ]; 
+then
+  echo "There are packages in the env not in requirements.txt"
+  echo "Aborting commit"
+  rm requirements_check.txt
+  exit 1
+fi
+
+rm requirements_check.txt
+exit 0

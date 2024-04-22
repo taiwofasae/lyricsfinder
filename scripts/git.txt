@@ -1,0 +1,10 @@
+
+git()
+{
+    if [[ $# -ge 1 && "$1" == "status" ]]
+    then
+        echo Your git-status pre-hook should be here
+    fi
+
+    command git "$@"
+}
