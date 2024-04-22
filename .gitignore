@@ -142,3 +142,5 @@ staticfiles/
 !staticfiles/*.py
 web/myenv/
 **/embeds/
+
+keys/
