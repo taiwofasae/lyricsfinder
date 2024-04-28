@@ -1,16 +1,26 @@
-lyrics = [
+var lyrics = [
     {title: 'gospel',content: ''},
     {title: 'dance',content: ''},
     {title: 'classical',content: ''},
     {title: 'example',content: ''}
 ];
 
+search_result = {
+    uuid: '',
+    lyrics: [],
+    status: true
+}
+
 ids = {
-    search_phrase: '#searchphrase',
+    search_phrase: '#search_phrase',
     lyrics_list: 'ul#lyrics-list',
     lyric_title: '#title',
-    lyric_content: '#content'
+    lyric_content: '#content',
+    uuid: '#uuid',
+    sim_score: '#sim_score'
 };
+
+post_url = window.MY_APP_POST_URL
 
 lyrics_list = {
     get_template: function () {
@@ -22,7 +32,8 @@ lyrics_list = {
     },
     
     set_data: function (data, index){
-        $($(ids.lyrics_list + ' li')[index]).html(data.title).removeClass('hidden');
+        title = `${index + 1}. ${data.title} (${data.sim_score})`;
+        $($(ids.lyrics_list + ' li')[index]).html(title).removeClass('hidden');
     },
     
     highlight: function (index){
@@ -56,7 +67,25 @@ lyrics_board = {
     },
     set: (data) => {
         $(ids.lyric_title).text(data.title)
-        $(ids.lyric_content).text(data.content)
+        $(ids.lyric_content).val(data.lyrics)
+        $(ids.sim_score).text(data.sim_score)
+    }
+}
+
+const generate_custom_uuid = () => ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+        (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
+    )
+
+    
+
+search_box = {
+    reset: () => {
+        uuid = generate_custom_uuid().substring(0,36)
+        $(ids.uuid).val(uuid)
+    },
+    clear: () => {
+        this.reset()
+        $(ids.search_phrase).val('')
     }
 }
 
@@ -89,38 +118,53 @@ $(document).ready(function () {
         lyrics_list.select(index);
     })
 
+    search_box.reset()
+
 
     $("form").submit(function (event) {
 
         animations.loading.start()
         lyrics_list.reset()
         
-    //   var formData = {
-    //     name: $("#name").val(),
-    //     email: $("#email").val(),
-    //     superheroAlias: $("#superheroAlias").val(),
-    //   };
+      var formData = {
+        uuid: $(ids.uuid).val(),
+        search_phrase: $(ids.search_phrase).val(),
+      };
   
-    //   $.ajax({
-    //     type: "POST",
-    //     url: "process.php",
-    //     data: formData,
-    //     dataType: "json",
-    //     encode: true,
-    //   }).done(function (data) {
-    //     console.log(data);
-    //   });
-
-
-        mock_api().then(()=>{
-            lyrics_list.populate(lyrics);
+      $.ajax({
+        type: "POST",
+        url: post_url,
+        data: formData,
+        dataType: "json",
+        encode: true,
+      }).done(function (data) {
+        if (data.status){
+            lyrics_list.populate(data.lyrics)
+            lyrics = data.lyrics
             lyrics_list.select(0);
             animations.done();
             animations.loading.end()
-        },
-        () => { 
-            animations.loading.end()
-        });
+
+            search_box.reset()
+        }
+
+      }).error(e => {
+        console.log(e)
+        animations.loading.end()
+    }).complete(() => {
+        
+      });
+
+
+        // mock_api().then(()=>{
+        //     lyrics_list.populate(lyrics);
+        //     lyrics_list.select(0);
+        //     animations.done();
+        //     animations.loading.end()
+        // },
+        // () => { 
+        //     animations.loading.end()
+        // });
    
     
         event.preventDefault();

@@ -3,15 +3,6 @@ from django.db.models import UniqueConstraint # Constrains fields to unique valu
 from django.db.models.functions import Lower # Returns lower cased value of field
 
 # Create your models here.
-
-class Orders(models.Model):
-    oid = models.IntegerField(primary_key=True)
-    fname = models.CharField(max_length=20)
-    lname = models.CharField(max_length=20)
-    price = models.FloatField()
-    mail = models.EmailField()
-    addr = models.CharField(max_length=50)
-
 class TimeStampedModel(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
 
@@ -51,8 +42,8 @@ import uuid
 class Search(TimeStampedModel):
     """Model representing a search phrase"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    phrase = models.CharField(max_length=50, unique=True)
-    api_version = models.CharField(max_length=20)
+    phrase = models.CharField(max_length=50)
+    api_version = models.CharField(max_length=20, null=True)
     done_timestamp = models.DateTimeField('Done Time', null=True)
 
 

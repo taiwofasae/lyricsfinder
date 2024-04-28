@@ -10,9 +10,14 @@
     <link rel="stylesheet" href="./fontawesome-free-6.5.1-web/css/solid.css">
     <link rel="stylesheet" href="./fontawesome-free-6.5.1-web/css/brands.css">
     <link rel="stylesheet" href="./fontawesome-free-6.5.1-web/css/fontawesome.css">
+    <link rel="stylesheet" href="./style.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js" integrity="sha512-8RnEqURPUc5aqFEN04aQEiPlSAdE0jlFS/9iGgUyNtwFnSKCXhmB6ZTNl7LnDtDWKabJIASzXrzD0K+LYexU9g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css" integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-    
+    <script src="/config.js"></script>
   </head>
   <body>
     <section class="py-5 text-center container">
@@ -26,11 +31,12 @@
       </section>
 
       <div class="container">
-        <form>
+        <form action="">
             <div class="form-group row">
-                <label for="searchphrase" class="col-sm-2 col-form-label">Phrase:</label>
+                <label for="search_phrase" class="col-sm-2 col-form-label">Phrase:</label>
                 <div class="col-sm-9">
-                    <input type="text" class="form-control col-auto" name="searchphrase" id="searchphrase" placeholder="Enter search phrase">
+                  <input type="text" hidden="true" name="uuid" id="uuid"/>
+                    <input type="text" class="form-control col-auto" name="search_phrase" id="search_phrase" placeholder="Enter search phrase">
                 </div>
                 <button type="submit" class="btn btn-primary col-sm-1"> <i class="fa-solid fa-magnifying-glass"></i></button>
                 
@@ -51,7 +57,7 @@
       <div class="py-5 bg-body-tertiary">
         <div class="container">
     
-          <div class="row">
+          <div class="row" id="#page-con" style="height: 600px !important;">
             <div class="col-lg-6">
                 <p class="">Matching songs:</p>
                 <ul class="list-group" id="lyrics-list">
@@ -78,13 +84,40 @@
             
             <div class="col-lg-6">
                 <div class="row">
-                    <p>Title: <b id="title" class="font-weight-bold">Lorem ipsum dolor sit amet</b></p>
+                    <p>Title: <b id="title" class="font-weight-bold">Lorem ipsum dolor sit amet</b> (<span id="sim_score">1.5</span>) </p>
+                    
 
                 </div>
-                <div class="row">
-                    <p id="content">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                    </p>
+                <div class="row" id="content-parent">
+                    <textarea id="content" readonly>
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis euismod porttitor sapien. Vivamus nec aliquam justo. Quisque volutpat libero nec augue convallis consequat. Nam dui tellus, cursus non enim ac, sollicitudin rhoncus metus. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse mollis, magna et mollis ultricies, odio est pellentesque tortor, eget maximus lacus libero vel velit. In varius turpis id dapibus ornare. Praesent vulputate congue eros eu blandit. Aliquam eget dolor ac libero scelerisque congue vel vel nulla. Ut sagittis id tortor eu accumsan. Etiam elementum sollicitudin enim eget porttitor. Praesent quis accumsan nisi. Donec dui tellus, facilisis eu mollis eu, dictum in neque. Nam malesuada in magna non varius.
+
+                      Proin in tellus porta, volutpat mi eget, aliquet turpis. Aenean sed auctor turpis, sed condimentum nisl. Sed sit amet commodo odio. Vivamus sapien lacus, bibendum nec augue eget, aliquam cursus augue. Sed vestibulum ante eu magna eleifend, et convallis elit placerat. Vestibulum molestie semper imperdiet. Maecenas aliquet nisl eu lacinia volutpat. Suspendisse libero nisl, consequat at euismod sed, aliquam quis lectus. Maecenas pulvinar sodales velit, quis luctus neque volutpat et. Quisque lobortis mauris in vestibulum sodales. Suspendisse dapibus purus id quam laoreet hendrerit.
+                      
+                      Phasellus varius suscipit velit, et faucibus eros suscipit id. Maecenas tincidunt vel diam aliquet maximus. Integer vitae sodales tortor. Ut mauris magna, dictum quis lobortis vitae, tempus a nisi. Nullam lacinia sollicitudin pulvinar. Sed faucibus laoreet eros id facilisis. Nulla dolor massa, cursus eget blandit ut, luctus sit amet augue. Ut nisi arcu, viverra id tempus at, facilisis in nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nullam accumsan sed lacus sit amet vulputate. Quisque lobortis elementum pretium.
+                      
+                      Aliquam erat volutpat. Donec vitae mi enim. Suspendisse rutrum auctor magna vel dignissim. Vivamus sodales efficitur mi eget semper. Cras mauris tortor, aliquam in blandit nec, rhoncus at sapien. Cras in tempus dui. Praesent fermentum nisl elit, a efficitur risus ornare eu. Etiam diam nibh, feugiat sit amet facilisis vel, elementum quis erat.
+                      
+                      Nunc lobortis dolor a velit mollis, ac semper nulla cursus. Maecenas fermentum quam et diam maximus, sed luctus justo pretium. Donec sodales libero lectus, sed luctus neque bibendum non. Nunc laoreet pulvinar magna, id iaculis sem aliquet et. Quisque ut fermentum sem, convallis placerat massa. Nam ac mauris quis eros interdum dignissim quis vel neque. Phasellus porta pretium tortor id consequat. Fusce ultrices interdum venenatis. Curabitur ultrices eu diam et efficitur. Vestibulum pretium sagittis enim, vitae feugiat orci elementum sed. Sed imperdiet scelerisque odio quis feugiat. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
+                      
+                      Nunc varius, sem et varius maximus, dui dui feugiat mauris, ut lacinia lacus eros nec risus. Donec sit amet nisl accumsan, tincidunt arcu at, pellentesque tellus. Duis porttitor scelerisque nisl quis venenatis. Vivamus tincidunt dapibus ante, eu malesuada velit pretium eget. Sed rhoncus elit in pellentesque condimentum. Duis quis malesuada urna, nec dictum nulla. Fusce porttitor ut lorem non ornare. Vivamus in ipsum vitae orci egestas fringilla fermentum id metus. Nam pellentesque felis ut viverra dignissim. Donec iaculis gravida nulla, et cursus erat lobortis ac. Cras quis fermentum enim, sed fermentum nibh. In pellentesque elit lorem, non laoreet dui cursus eget. Proin est orci, porttitor non erat non, aliquam commodo neque. Nullam scelerisque suscipit est, gravida mattis ipsum pulvinar non. Fusce quam massa, pulvinar et interdum quis, congue ac neque. Curabitur vehicula porttitor nibh, vitae suscipit lacus rhoncus in.
+                      
+                      Donec dui ligula, congue vel sapien vel, rutrum semper justo. Aenean feugiat in risus et rutrum. Cras ac fermentum mi. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Aenean tristique consectetur velit, in cursus ex posuere ac. Donec volutpat nec dolor nec vehicula. Nam ultrices venenatis malesuada. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum viverra mauris sed purus suscipit, eu vehicula lectus molestie. Nunc quis lectus vitae felis auctor viverra ut vitae ipsum. Ut porta tempor tellus vitae blandit. Sed molestie, sem a imperdiet blandit, mauris arcu consequat dolor, scelerisque mattis est mi eu purus. Duis lobortis condimentum ex, nec gravida ex sagittis sed.
+                      
+                      Cras consequat, est quis tempor commodo, magna leo bibendum massa, ut tincidunt tortor enim eget massa. Integer rutrum suscipit neque, sed hendrerit metus euismod at. Suspendisse dignissim quis nulla et sollicitudin. In posuere nulla et accumsan sodales. Aliquam viverra augue non consectetur convallis. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Morbi faucibus vulputate purus nec aliquet. Nullam orci tellus, auctor in dignissim vitae, malesuada nec metus. Duis eleifend massa ac dolor hendrerit tempus. Etiam eget ipsum convallis, sodales sapien at, ultrices ligula. Fusce tempor egestas ipsum ac pretium. Donec tempor, nunc nec vestibulum fermentum, lacus erat suscipit quam, quis pellentesque lorem libero eu enim. Nulla quis malesuada dolor. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Praesent facilisis mi volutpat felis hendrerit imperdiet. Praesent non dui libero.
+                      
+                      Etiam vel augue vitae mi ultricies bibendum. Nullam dapibus consectetur rutrum. Nunc ac quam mi. Aenean egestas venenatis nisi id finibus. Maecenas finibus nisi sed odio semper, sed aliquam risus lacinia. Duis quis elit eros. Mauris dignissim metus nec eleifend pretium. Nunc in volutpat ipsum, et vehicula massa. Mauris ornare risus massa, sit amet varius urna efficitur vitae. Etiam ut dolor dui.
+                      
+                      Duis et malesuada turpis, in placerat nunc. Suspendisse massa est, egestas sit amet augue rutrum, varius pharetra magna. Morbi sit amet lorem fringilla, malesuada enim sit amet, tincidunt eros. Mauris sit amet quam finibus mauris congue commodo. Aliquam erat volutpat. Proin finibus ex eget efficitur molestie. Donec et elit efficitur, iaculis lectus egestas, condimentum nisl. Vivamus euismod, erat in rutrum gravida, lorem eros lacinia eros, et egestas lacus nisl ut lacus. Phasellus blandit accumsan neque a pulvinar. In vel euismod ex, quis semper elit. Duis at ante laoreet, feugiat turpis nec, tristique justo. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nam scelerisque suscipit nibh. Pellentesque in lacus ac nulla sodales ultrices.
+                      
+                      Vestibulum sit amet nisl egestas, vestibulum sapien nec, lobortis elit. In pretium lorem mauris, ac posuere augue fermentum molestie. Nulla id sapien vel est posuere aliquet. Nunc sit amet facilisis mi. Duis bibendum vulputate velit, at facilisis nunc. Fusce non tempus dui, quis finibus tellus. Phasellus sed luctus lectus, nec egestas purus. In consequat, nulla quis fringilla molestie, elit lacus posuere ante, ac aliquet ex arcu at metus. Vestibulum sed enim suscipit, pellentesque arcu consectetur, lacinia orci. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
+                      
+                      Suspendisse dictum eget lacus a tempus. Nunc sapien nunc, interdum lobortis nunc ultrices, consequat vehicula dolor. Curabitur faucibus elit feugiat ipsum laoreet viverra. Duis hendrerit non nisl id venenatis. In sollicitudin dui quis suscipit malesuada. Suspendisse non velit semper, lobortis augue eget, euismod lorem. Ut vitae mauris justo. In hac habitasse platea dictumst. Ut finibus, eros sit amet tempus gravida, massa urna viverra orci, non scelerisque nisi risus et erat. Mauris risus dui, fringilla ut pellentesque sit amet, placerat vitae risus. Vivamus eleifend accumsan metus. Phasellus nisl purus, tincidunt id sem sed, ultrices elementum felis. Maecenas finibus euismod libero in interdum. In feugiat sed justo non tincidunt. Vivamus consequat cursus enim, non ullamcorper nibh sagittis id. Quisque lacus nisl, pretium non tortor vitae, pretium fringilla nisi.
+                      
+                      Integer molestie fermentum turpis, sit amet fringilla lectus efficitur ac. Suspendisse pharetra nisl quis nisi ultricies pellentesque. Vestibulum eu massa sit amet diam aliquet aliquam. Phasellus suscipit placerat sagittis. Donec vel massa tempus, vulputate arcu quis, scelerisque metus. Nulla facilisi. Cras aliquet convallis molestie. Proin interdum nunc elit, ut efficitur est fermentum ac. Nunc feugiat luctus elit, id pellentesque arcu facilisis nec. Cras libero mauris, blandit at tincidunt eu, volutpat quis mauris. Ut eu lectus magna. Cras erat odio, faucibus sed sem in, molestie fermentum orci.
+                      
+                      In vel est urna. Pellentesque vel lorem porta, gravida eros et, hendrerit risus. Ut ac nunc sit amet risus bibendum consequat eget condimentum purus. Nullam vestibulum neque purus, vel feugiat nunc accumsan nec. Maecenas sollicitudin, turpis eu gravida ultricies, est mauris aliquam tortor, nec laoreet diam erat vel sapien. Praesent ultricies scelerisque pulvinar. Maecenas facilisis dictum nisi, eget bibendum sem interdum in. Maecenas placerat vulputate risus, vel sodales orci consequat et. Suspendisse quis justo ut massa ultricies suscipit. Aenean eu ex vulputate, luctus enim sit amet, volutpat ligula. Nunc convallis lacus eget quam venenatis, ac pulvinar dui tristique. Mauris tortor enim, dignissim id nunc eu, commodo molestie magna. Etiam sit amet eleifend ipsum.
+                    </textarea>
                 </div>
                 
 
@@ -104,5 +137,6 @@
     <!-- ... -->
     <script src="jquery-ext.js"></script>
     <script src="form.js"></script>
+    <script src="codemirror.js"></script>
   </body>
 </html>

@@ -79,8 +79,32 @@ class Search:
             UPDATE lyricsapp_search SET api_version = '{1}', done_timestamp = {3}, status = '{2}' WHERE id = '{0}';
         """.format(search_id, api_version, status, database.to_db_time_format_str(done_timestamp) if done_timestamp else 'NULL')
 
+        def get_songs(search_id, offset=0, limit = 10):
+            return """
+            SELECT title, lyrics, char_length, sim_score FROM lyricsapp_song 
+            INNER JOIN lyricsapp_songsearch ON lyricsapp_song.id = lyricsapp_songsearch.song_id
+            WHERE search_id = '{0}' ORDER BY sim_score desc
+            limit {1} offset {2};
+        """.format(search_id, limit, offset)
     
 class SongSearch:
+
+    def __init__(self, song_id, search_id, title, lyrics, char_length, sim_score) -> None:
+        self.song_id = song_id
+        self.search_id = search_id
+        self.title = title
+        self.lyrics = lyrics
+        self.char_length = char_length
+        self.sim_score = sim_score
+
+    def serialize_to_json(self):
+        return {
+            'title': self.title,
+            'lyrics': self.lyrics,
+            'char_length': self.char_length,
+            'sim_score': self.sim_score
+        }
+
     class MysqlCommands:
         table_properties = {
             'id': 'bigint PRIMARY auto_increment',

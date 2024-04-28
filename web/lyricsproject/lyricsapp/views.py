@@ -1,45 +1,61 @@
 from django.shortcuts import render, redirect
-from .forms import OrderForm
-from .models import Orders
+from django import http
+from lyricsapp import forms
+from django.views.decorators.csrf import csrf_exempt
+from embeddings import songsearch
+from lyricsapp import models
+from lyricsapp import dispatchers
+import logging
 
 # Create your views here.
 
-def orderFormView(request):
-    form = OrderForm()
+def create_search_response(uuid, lyrics, status):
+    return {
+        'uuid': uuid,
+        'lyrics': lyrics,
+        'status': status
+    }
+
+@csrf_exempt
+def search(request):
     if request.method == 'POST':
-        form = OrderForm(request.POST)
+
+        form = forms.SearchForm(request.POST)
+
         if form.is_valid():
-            form.save()
-            return redirect('show_url')
-    
-    template_name = 'ofv.html'
-    context = {'form': form}
-    return render(request, template_name, context)
 
-def showView(request):
-    obj = Orders.objects.all()
-    template_name = 'sv.html'
-    context = {'obj': obj}
-    return render(request, template_name, context)
+            uuid = form.cleaned_data["uuid"].replace("-","")
+            search_phrase = form.cleaned_data["search_phrase"]
 
-def updateView(request, f_oid):
-    obj = Orders.objects.get(oid=f_oid)
-    form = OrderForm(instance=obj)
-    if request.method == 'POST':
-        form = OrderForm(request.POST, instance=obj)
-        if form.is_valid():
-            form.save()
-            return redirect('show_url')
-    
-    template_name = 'order.html'
-    context = {'form': form}
-    return render(request, template_name, context)
+            # if uuid exists, fetch it
+            # else create it and return response.
+            search_obj = songsearch.get_search(uuid)
+            logging.info("search_obj:{0}".format(search_obj))
+            if not search_obj:
+                models.Search(id = uuid,
+                                phrase = search_phrase,
+                                status = 'PENDING').save()
+                search_obj = songsearch.get_search(uuid)
 
-def deleteView(request, f_oid):
-    obj = Orders.objects.get(oid=f_oid)
-    if request.method == 'POST':
-        obj.delete()
-        return redirect('show_url')
-    template_name = 'confirmation.html'
-    context = {'obj': obj}
-    return render(request, template_name, context)
+                #dispatchers.execute_search(search_id)
+
+                return http.JsonResponse(create_search_response(uuid, [], False))
+            
+
+            # if search is pending, return status
+            if search_obj.status != 'DONE':
+                return http.JsonResponse(create_search_response(uuid, [], False))
+
+            # else if completed, return results
+            search_result = [x.serialize_to_json() for x in songsearch.get_songs_for_search(search_id=uuid)]
+            response_data = create_search_response(uuid, search_result, True)
+
+            return http.JsonResponse(response_data)
+        
+        return http.HttpResponseBadRequest("Invalid form.")
+
+    else:
+        return http.HttpResponseBadRequest("Invalid method. Use POST")
+
+def status(request):
+    pass

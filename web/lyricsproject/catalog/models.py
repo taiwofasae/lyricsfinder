@@ -7,6 +7,21 @@ from django.urls import reverse # Used in get_absolute_url() to get URL for spec
 from django.db.models import UniqueConstraint # Constrains fields to unique values
 from django.db.models.functions import Lower # Returns lower cased value of field
 
+
+class Orders(models.Model):
+    oid = models.IntegerField(primary_key=True)
+    fname = models.CharField(max_length=20)
+    lname = models.CharField(max_length=20)
+    price = models.FloatField()
+    mail = models.EmailField()
+    addr = models.CharField(max_length=50)
+
+class TimeStampedModel(models.Model):
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        abstract = True
+        
 class Genre(models.Model):
     """Model representing a book genre."""
     name = models.CharField(

@@ -9,9 +9,6 @@ from . import similarity
 def ping_db():
     return database.ping()
 
-def quick_math():
-    print("7 is the answer")
-
 def execute_pending_search_phrases():
     for search_id in get_pending_searches():
         execute_search(search_id)
@@ -120,6 +117,18 @@ def update_search(search_id, api_version, status):
 
     database.execute(models.Search.MysqlCommands.update_search(search_id, api_version, status, done_timestamp))
 
+def get_songs_for_search(search_id, page_no=0, batch_size = 10):
+
+    offset = page_no * batch_size
+    limit = batch_size
+
+    results = database.fetch(models.Search.MysqlCommands.get_songs(search_id, offset, limit))
+    
+
+    return [models.SongSearch(song_id=None, search_id=search_id, 
+                              title=title, lyrics=lyrics, char_length=char_length,
+                              sim_score=sim_score) 
+            for (title, lyrics, char_length, sim_score) in results]
 
 # SONGS
 

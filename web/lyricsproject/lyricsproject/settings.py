@@ -29,6 +29,9 @@ DEBUG = True if env.get_key('DEBUG') == 'True' else False
 allowed_hosts = env.get_key('ALLOWED_HOSTS')
 ALLOWED_HOSTS = allowed_hosts.split(',') if allowed_hosts else []
 
+allowed_origins = env.get_key('CORS_ALLOWED_ORIGINS')
+CORS_ALLOWED_ORIGINS = allowed_origins.split(',') if allowed_origins else []
+
 
 # Application definition
 
@@ -43,7 +46,8 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'catalog.apps.CatalogConfig',
-    'django_q'
+    'corsheaders',
+    'django_q',
    # 'django_apscheduler'
 ]
 
@@ -52,6 +56,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap5'
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

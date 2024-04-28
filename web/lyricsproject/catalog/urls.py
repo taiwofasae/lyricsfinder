@@ -8,4 +8,11 @@ urlpatterns = [
     path('book/<int:pk>', views.BookDetailView.as_view(), name='book-detail'),
     path('authors/', views.AuthorListView.as_view(), name='authors'),
     path('author/<int:pk>', views.AuthorDetailView.as_view(), name='author-detail'),
+
+    path('ofv/', views.orderFormView, name='order_url'),
+    path('sv/', views.showView, name='show_url'),
+    path('up/<int:f_oid>', views.updateView, name= 'update_url'),
+    path('del/<int:f_oid>', views.deleteView, name= 'delete_url'),
+
 ]
+
