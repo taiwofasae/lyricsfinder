@@ -1,5 +1,5 @@
 import mysql.connector
-import logging
+from common import log
 from lyricsproject import settings
 
 db = settings.DATABASES['default']
@@ -36,7 +36,7 @@ def to_db_time_format_str(timestamp):
     return db_time
 
 def execute(command):
-    logging.info('execute:{0}'.format(command))
+    log.info('execute:{0}'.format(command))
     cnx = open_connection()
 
     if cnx and cnx.is_connected():
@@ -50,7 +50,7 @@ def execute(command):
 
 
 def fetch(command):
-    logging.info('fetch:{0}'.format(command))
+    log.info('fetch:{0}'.format(command))
     cnx = open_connection()
 
     output = []
@@ -70,10 +70,3 @@ def fetch(command):
         print("Could not connect to database")
 
     return output
-
-if __name__ == "__main__":
-    logging.getLogger().setLevel(logging.INFO)
-    if ping():
-        print("mysql database connection OK")
-    else:
-        print("mysql db unreachable :(")

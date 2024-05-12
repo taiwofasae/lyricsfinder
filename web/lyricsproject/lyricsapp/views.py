@@ -1,11 +1,8 @@
 from django.shortcuts import render, redirect
 from django import http
-from lyricsapp import forms
 from django.views.decorators.csrf import csrf_exempt
-from embeddings import songsearch
-from lyricsapp import models
-from lyricsapp import dispatchers
-import logging
+from common import songsearch, log
+from lyricsapp import models, forms
 
 # Create your views here.
 
@@ -30,7 +27,7 @@ def search(request):
             # if uuid exists, fetch it
             # else create it and return response.
             search_obj = songsearch.get_search(uuid)
-            logging.info("search_obj:{0}".format(search_obj))
+            log.info("search_obj:{0}".format(search_obj))
             if not search_obj:
                 models.Search(id = uuid,
                                 phrase = search_phrase,

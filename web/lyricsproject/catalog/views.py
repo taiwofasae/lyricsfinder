@@ -1,17 +1,15 @@
 from django.shortcuts import render
-from .models import Book, Author, BookInstance, Genre
+
+from common import songsearch
+from catalog.models import Book, Author, BookInstance, Genre
 from django.views import generic
 from django.http import HttpResponse
-from lyricsapp import dispatchers
-from embeddings import songsearch, embeddings
-import logging
-from lyricsproject import settings
 
 # Create your views here.
 
 def execute(request, search_id):
     #dispatchers.execute_search(search_id)
-    songsearch.execute_pending_search_phrases()
+    songsearch.execute_undone_search_phrases()
     #songsearch.execute_search(search_id)
     #embeddings.get_embeddings_for_search_phrase(search_id)
 

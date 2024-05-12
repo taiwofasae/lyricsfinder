@@ -1,5 +1,5 @@
 import json
-import logging
+from common import log
 import os
 from lyricsproject import settings
 
@@ -11,13 +11,10 @@ search_folder = embeddings_folder+'search/'
 
 
 def save_to_file(file_name, json_data):
-    logging.info("writing to file: {0}".format(file_name))
-    try:
-        with open(file_name, 'w') as f:
-            json.dump(json_data, f, ensure_ascii=False)
-    except Exception as e:
-        logging.error(e)
-        logging.info("file writing failed.")
+    log.info("writing to file: {0}".format(file_name))
+
+    with open(file_name, 'w') as f:
+        json.dump(json_data, f, ensure_ascii=False)
 
 def load_from_file(file_name):
     json_data = None
@@ -25,8 +22,8 @@ def load_from_file(file_name):
         with open(file_name, 'r') as f:
             json_data = json.load(f)
     except Exception as e:
-        logging.error(e)
-        logging.info("file reading failed.")
+        log.error(e)
+        log.info("file reading failed.")
     
     return json_data
 
@@ -54,6 +51,3 @@ def save_search_phrase_embedding(search_id, embeddings):
 def load_search_phrase_embedding(search_id):
     
     return load_from_file("{0}{1}.csv".format(search_folder, search_id)) or []
-
-if __name__ == "__main__":
-    logging.getLogger().setLevel(logging.INFO)

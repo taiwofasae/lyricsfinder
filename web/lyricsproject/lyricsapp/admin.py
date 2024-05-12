@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Song, SongSearch, Search
+from lyricsapp.models import Song, SongSearch, Search
 
 # Register your models here.
 #admin.site.register(Song)

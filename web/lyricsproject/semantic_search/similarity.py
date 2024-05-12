@@ -1,10 +1,8 @@
 import numpy as np
-from . import embeddings
+from embeddings import embeddings
 import logging
+from semantic_search import search_helpers
 
-def cosine_similarity(a, b):
-    score = 5 * np.dot(a,b) / (np.linalg.norm(a) * np.linalg.norm(b))
-    return round(score, 1)
 
 def similarity_scores(search_id, song_ids):
 
@@ -13,7 +11,7 @@ def similarity_scores(search_id, song_ids):
 
     songs_embedding = [embeddings.get_embeddings_for_song(id) for id in song_ids]
 
-    scores = [cosine_similarity(x, search_string_embedding) for x in songs_embedding]
+    scores = [search_helpers.cosine_similarity(x, search_string_embedding) for x in songs_embedding]
 
     return scores
 
@@ -25,9 +23,4 @@ def similarity_score(search_id, song_id):
     song_embedding = embeddings.get_embeddings_for_song(song_id)
     logging.info("song embedding[:5]: {0}".format(song_embedding[:5]))
 
-    return cosine_similarity(search_string_embedding, song_embedding)
-
-if __name__ == "__main__":
-    logging.getLogger().setLevel(logging.INFO)
-
-#print(similarity_scores('5b126c1c494f4be19f96b541d1cffb6f', [1, 2, 3]))
+    return search_helpers.cosine_similarity(search_string_embedding, song_embedding)

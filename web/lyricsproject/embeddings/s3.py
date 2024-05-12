@@ -1,8 +1,8 @@
 import json
-import logging
 import os
-from lyricsproject import settings
 import boto3
+from common import log
+from lyricsproject import settings
 from botocore.exceptions import ClientError
 
 
@@ -24,14 +24,10 @@ def upload_file(file_name, json_dump):
 
     # Upload the file
     s3_client = boto3.client('s3')
-    try:
-        logging.info("uploading data to s3 bucket")
-        response = s3_client.put_object(Bucket=S3_BUCKET, Key=file_name, Body=json_dump, ContentType='application/json' )
-    except ClientError as e:
-        logging.error(e)
-        logging.info("uploading failed")
-        return False
-    return True
+
+    log.info("uploading data to s3 bucket")
+    response = s3_client.put_object(Bucket=S3_BUCKET, Key=file_name, Body=json_dump, ContentType='application/json' )
+
 
 def download_file(file_name):
     """Download a file from an S3 bucket
@@ -39,16 +35,17 @@ def download_file(file_name):
     :param file_name: File to upload
     :return: {Body: }
     """
+    data = None
     s3_client = boto3.client('s3')
     try:
-        logging.info("downloading data from s3 bucket")
+        log.info("downloading data from s3 bucket")
         response = s3_client.get_object(Bucket=S3_BUCKET, Key=file_name)
         data = json.loads(response['Body'].read())
 
     except ClientError as e:
-        logging.error(e)
-        logging.info("downloading failed")
-        return None
+        log.error(e)
+        log.info("downloading failed")
+        
     return data
 
 
@@ -78,7 +75,7 @@ def load_search_phrase_embedding(search_id):
     return download_file("{0}{1}.csv".format(search_folder, search_id)) or []
 
 if __name__ == "__main__":
-    logging.getLogger().setLevel(logging.INFO)
+    log.getLogger().setLevel(log.INFO)
 
 sample = {
     "it": "hello everyone",

@@ -1,2 +1,6 @@
+from lyricsproject import env, settings
 
-SIMILARITY_SCORE_THRESHOLD = 3.0
+
+EMBEDDINGS_PERSISTENCE = env.get_key('PERSISTENCE') == 'True'
+
+S3_NOT_FILE = not settings.DEBUG
