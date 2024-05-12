@@ -20,7 +20,7 @@ ids = {
     sim_score: '#sim_score'
 };
 
-post_url = window.MY_APP_POST_URL
+post_url = window.LYRICSAPP_POST_URL
 
 lyrics_list = {
     get_template: function () {

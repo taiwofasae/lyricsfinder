@@ -1,1 +1,1 @@
-window.MY_APP_POST_URL = 'http://localhost:8083/lyrics/search/'
+window.LYRICSAPP_POST_URL = 'http://localhost:8083/lyrics/search/'
