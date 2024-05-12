@@ -8,10 +8,13 @@ colorama==0.4.6
 crispy-bootstrap5==2024.2
 distro==1.9.0
 Django==5.0.4
+django-cors-headers==4.3.1
 django-crispy-forms==2.1
 django-mysql==4.12.0
 django-picklefield==3.2
 django-q2==1.6.2
+djangorestframework==3.15.1
+dnspython==2.6.1
 exceptiongroup==1.2.1
 gunicorn==22.0.0
 h11==0.14.0
@@ -26,6 +29,7 @@ openai==1.23.2
 packaging==24.0
 pydantic==2.7.0
 pydantic_core==2.18.1
+pymongo==4.7.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 s3transfer==0.10.1
