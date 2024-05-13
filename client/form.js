@@ -13,12 +13,17 @@ search_result = {
 
 ids = {
     search_phrase: '#search_phrase',
-    lyrics_list: 'ul#lyrics-list',
+    lyrics_list: 'ul#lyrics_list',
     lyric_title: '#title',
     lyric_content: '#content',
     uuid: '#uuid',
-    sim_score: '#sim_score'
+    sim_score: '#sim_score',
+    content_pane: '#page_con'
 };
+
+classes = {
+    search_phrase: '.search_phrase'
+}
 
 post_url = window.LYRICSAPP_POST_URL
 
@@ -69,7 +74,10 @@ lyrics_board = {
         $(ids.lyric_title).text(data.title)
         $(ids.lyric_content).val(data.lyrics)
         $(ids.sim_score).text(data.sim_score)
-    }
+        $(classes.search_phrase).text($(ids.search_phrase).val())
+    },
+
+    show_pane: () => $(ids.content_pane).removeClass('hidden')
 }
 
 const generate_custom_uuid = () => ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
@@ -111,6 +119,30 @@ mock_api = function(){
     });
 }
 
+window.poller = 0
+window.poller_count = 0
+window.POLLER_STARTED = false
+
+polling = {
+    start: function(){
+        if (window.POLLER_STARTED) return
+
+        window.poller = setInterval(_ => {
+            if (window.poller_count < 10) $("form").submit()
+            else {
+                console.log("Polled api 10 times. Forcing it now...")
+                clearInterval(window.poller)
+            }
+            window.poller_count++
+        }, 2000)
+        window.POLLER_STARTED = true
+    },
+    stop: function(){
+        clearInterval(window.poller)
+        window.POLLER_STARTED = false
+    }
+}
+
 $(document).ready(function () {
 
     $(ids.lyrics_list + ' li').on("click", function(){
@@ -146,11 +178,17 @@ $(document).ready(function () {
             animations.loading.end()
 
             search_box.reset()
+
+            lyrics_board.show_pane()
+
+            polling.stop()
         }
+        else polling.start()
 
       }).error(e => {
         console.log(e)
         animations.loading.end()
+        polling.stop()
     }).complete(() => {
         
       });

@@ -23,6 +23,8 @@ class SearchAdmin(admin.ModelAdmin):
 
     list_filter = ('api_version',)
 
+    ordering = ('-created_on',)
+
     inlines = [SongSearchesInline]
 
 @admin.register(SongSearch)

@@ -71,11 +71,11 @@ class Search(TimeStampedModel):
     class Meta:
 
         constraints = [
-            UniqueConstraint(
-                Lower('phrase'),
-                name='search_phrase_case_insensitive_unique',
-                violation_error_message="Search phrase already exists (case insensitive match)"
-            ),
+            # UniqueConstraint(
+            #     Lower('phrase'),
+            #     name='search_phrase_case_insensitive_unique',
+            #     violation_error_message="Search phrase already exists (case insensitive match)"
+            # ),
         ]
 
 class SongSearch(TimeStampedModel):

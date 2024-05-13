@@ -6,11 +6,11 @@ from django_q.tasks import async_task
 from common import log, songsearch
 import uuid
 
-#@receiver(post_save, sender=models.Search)
+@receiver(post_save, sender=models.Search)
 def execute_search(sender, instance, **kwargs):
     log.info("'Post_save on Search' dispatch called")
 
-    execute_search(instance.id)
+    execute_search(instance.id.hex)
 
 def execute_pending_search_phrases():
     songsearch.execute_pending_search_phrases()
