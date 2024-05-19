@@ -17,6 +17,17 @@ def execute_undone_search_phrases():
     for search_id in get_undone_searches():
         execute_search(search_id)
 
+def search_on_demand(search_phrase):
+    song_ids, sim_scores = linear_db.top_10_similarity_scores_by_search_phrase(search_phrase)
+
+    output = []
+    for id, score in zip(song_ids, sim_scores):
+        song = get_song(id).serialize_to_json()
+        song['sim_score'] = score
+        output.append(song)
+
+    return output
+
 def execute_search_top10(search_id):
 
     _execute_search(search_id, _search_top10)
@@ -129,6 +140,8 @@ def insert_songsearches_by_search_id(search_id, song_ids, similarity_scores):
 ## SEARCH
 
 def get_search(search_id):
+    if isinstance(search_id, uuid.UUID):
+        search_id = search_id.hex
     results = database.fetch(models.Search.MysqlCommands.get_search(search_id))
     
     if results:

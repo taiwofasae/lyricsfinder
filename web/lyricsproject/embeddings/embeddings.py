@@ -35,11 +35,11 @@ def get_embeddings_for_songs(song_ids):
 
     return embedding
 
-def get_embeddings_for_search_phrase(search_id):
+def get_embeddings_for_search_id(search_id):
 
-    return get_embeddings_for_search_phrases([search_id])
+    return get_embeddings_for_search_ids([search_id])
 
-def get_embeddings_for_search_phrases(search_ids):
+def get_embeddings_for_search_ids(search_ids):
 
     embedding = [None for song_id in search_ids]
 
@@ -53,13 +53,14 @@ def get_embeddings_for_search_phrases(search_ids):
     if null_idx:
         null_ids = [search_ids[i] for i in null_idx]
         log.info("fetching embedding from api")
-        null_embedding = fetch_embeddings_for_search_phrases(null_ids)
+        null_embedding = fetch_embeddings_for_search_ids(null_ids)
 
         for j in range(len(null_idx)):
             i = null_idx[j]
             embedding[i] = null_embedding[j]
 
     return embedding
+
 
 def get_song_details(song_ids):
     songs = []
@@ -106,9 +107,7 @@ def get_search_phrases(search_ids):
     return [search.search_phrase for search in searches]
 
     
-def fetch_embeddings_for_search_phrases(search_ids):
-
-    log.info("getting openai embeddings")
+def fetch_embeddings_for_search_ids(search_ids):
 
     log.info("getting search phrases for {0} search_ids".format(len(search_ids)))
 
@@ -123,8 +122,7 @@ def fetch_embeddings_for_search_phrases(search_ids):
         file_embeddings.save_search_phrase_embedding(search_ids[0], [])
 
 
-    log.info("getting openai embeddings for {0} phrases".format(len(search_ids)))
-    embeddings = embed_api.get_embeddings_for_phrases(searches)
+    embeddings = fetch_embeddings_for_search_phrases(searches)
 
     if PERSIST:
         log.info("saving embeddings")
@@ -133,6 +131,26 @@ def fetch_embeddings_for_search_phrases(search_ids):
 
     return embeddings
 
-def fetch_embeddings_for_search_phrase(search_id):
+def fetch_embeddings_for_search_id(search_id):
 
-    return fetch_embeddings_for_search_phrases([search_id])[0]
+    return fetch_embeddings_for_search_ids([search_id])[0]
+
+def fetch_embeddings_for_search_phrases(search_phrases):
+
+    log.info("getting openai embeddings")
+
+    log.info("getting search phrases for {0} search_ids".format(len(search_phrases)))
+
+    if len(search_phrases) < 5:
+        log.info("search_phrases: {0}'"
+                    .format('\n'.join([str(search_phrase) for search_phrase in search_phrases])))
+
+
+    log.info("getting openai embeddings for {0} phrases".format(len(search_phrases)))
+    embeddings = embed_api.get_embeddings_for_phrases(search_phrases)
+
+    return embeddings
+
+def fetch_embeddings_for_search_phrase(search_phrase):
+
+    return fetch_embeddings_for_search_phrases([search_phrase])[0]

@@ -7,13 +7,24 @@ def top_10_similarity_scores(search_id):
     song_ids = []
 
     for (_, _song_ids, _scores) in similarity_scores_by_search_id(search_id, batch_size=1000):
-        _song_ids, _scores = extract_top_n_scores(_song_ids, _scores, n=10)
+        _song_ids, _scores = _extract_top_n_scores(_song_ids, _scores, n=10)
         scores.extend(_scores)
         song_ids.extend(_song_ids)
 
-    return extract_top_n_scores(song_ids, scores, n=10)
+    return _extract_top_n_scores(song_ids, scores, n=10)
 
-def extract_top_n_scores(song_ids, scores, n=10):
+def top_10_similarity_scores_by_search_phrase(search_phrase):
+    scores = []
+    song_ids = []
+
+    for (_, _song_ids, _scores) in similarity_scores_by_search_phrase(search_phrase, batch_size=1000):
+        _song_ids, _scores = _extract_top_n_scores(_song_ids, _scores, n=10)
+        scores.extend(_scores)
+        song_ids.extend(_song_ids)
+
+    return _extract_top_n_scores(song_ids, scores, n=10)
+
+def _extract_top_n_scores(song_ids, scores, n=10):
     if len(song_ids) != len(scores):
         raise ValueError('len(song_ids) != len(scores)')
     
@@ -34,6 +45,20 @@ def similarity_scores_by_search_id(search_id, batch_size = 10):
         song_ids, scores, new_song_ids, new_scores = similarity_scores_for_song_ids_range(search_id, page_no=batch_id, batch_size=batch_size)
 
         yield (batch_no, song_ids, scores, new_song_ids, new_scores)
+
+def similarity_scores_by_search_phrase(search_phrase, batch_size = 10):
+
+    num_songs = songsearch.get_num_songs()
+    batches = (num_songs + batch_size - 1) // batch_size
+
+    
+    for batch_id in range(0, batches):
+
+        batch_no = batch_id + 1
+
+        song_ids, scores = similarity_scores_for_song_ids_range_by_search_phrase(search_phrase, page_no=batch_id, batch_size=batch_size)
+
+        yield (batch_no, song_ids, scores)
 
 def similarity_scores_for_song_ids_range(search_id, page_no=0, batch_size=10):
 
@@ -59,12 +84,35 @@ def similarity_scores_for_song_ids_range(search_id, page_no=0, batch_size=10):
 
     return song_ids, scores, null_song_ids, null_scores
 
+def similarity_scores_for_song_ids_range_by_search_phrase(search_phrase, page_no=0, batch_size=10):
+
+    song_ids = [song.song_id for song in songsearch.get_songs(page_no=page_no, batch_size=batch_size)]
+
+    scores = similarity_scores_for_songs_by_search_phrase(search_phrase, song_ids)
+
+    return song_ids, scores
+
 def similarity_scores(search_id, song_ids):
 
     if not song_ids:
         return []
+    
+    search_phrase = songsearch.get_search(search_id)
+    if not search_phrase:
+        return None
 
-    search_string_embedding = embeddings.get_embeddings_for_search_phrase(search_id)
+    return similarity_scores_for_songs_by_search_phrase(search_phrase.search_phrase, song_ids)
+
+def similarity_score(search_id, song_id):
+
+    return similarity_scores(search_id, [song_id])[0]
+
+def similarity_scores_for_songs_by_search_phrase(search_phrase, song_ids):
+
+    if not song_ids:
+        return []
+
+    search_string_embedding = embeddings.fetch_embeddings_for_search_phrase(search_phrase)
     
     songs_embedding = embeddings.get_embeddings_for_songs(song_ids)
 
@@ -81,6 +129,6 @@ def similarity_scores(search_id, song_ids):
 
     return scores[0].tolist()
 
-def similarity_score(search_id, song_id):
+def similarity_score_for_songs_by_search_phrase(search_phrase, song_id):
 
-    return similarity_scores(search_id, [song_id])[0]
+    return similarity_scores_for_songs_by_search_phrase(search_phrase, [song_id])[0]

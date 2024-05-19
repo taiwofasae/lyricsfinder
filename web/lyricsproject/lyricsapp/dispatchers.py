@@ -16,10 +16,26 @@ def execute_pending_search_phrases():
     songsearch.execute_pending_search_phrases()
 
 def execute_search(search_id):
+    search_id = _sanitize_search_id(search_id)
+
+    async_task('common.songsearch.execute_search', search_id)
+
+def _create_search(uuid, search_phrase):
+    try:
+        models.Search(id = uuid,
+                        phrase = search_phrase,
+                        status = 'PENDING').save()
+        execute_search(uuid)
+    except:
+        log.error("Error creating search in dispatcher")
+
+
+
+def _sanitize_search_id(search_id):
     if isinstance(search_id,uuid.UUID):
         search_id = search_id.hex
 
     if '-' in search_id:
         search_id = search_id.replace('-','')
 
-    async_task('common.songsearch.execute_search', search_id)
+    return search_id

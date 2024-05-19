@@ -13,6 +13,12 @@ class Song:
     def __str__(self) -> str:
         return f"song_id: {self.song_id}, title: {self.title}, lyrics: {self.get_short_lyrics()}"
     
+    def serialize_to_json(self):
+        return {
+            'title': self.title,
+            'lyrics': self.lyrics,
+        }
+    
     class MysqlCommands:
         table_properties = {
             'id': 'int PRIMARY KEY auto_increment',

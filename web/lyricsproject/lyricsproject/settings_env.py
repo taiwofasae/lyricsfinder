@@ -73,3 +73,7 @@ S3 = {
     "FOLDER": env.get_key('S3_FOLDER'),
     "BUCKET_NAME": env.get_key('S3_BUCKET_NAME')
 }
+
+SEARCH = {
+    "ONDEMAND" : env.get_key('SEARCH_ONDEMAND')
+}

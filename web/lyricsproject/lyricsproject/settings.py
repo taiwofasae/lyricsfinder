@@ -152,3 +152,5 @@ Q_CLUSTER = settings_env.Q_CLUSTER or {}
 LOGGING = settings_env.LOGGING or {}
 
 S3 = settings_env.S3 or {}
+
+SEARCH = settings_env.SEARCH or {}
