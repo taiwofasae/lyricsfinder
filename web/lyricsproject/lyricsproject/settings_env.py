@@ -75,5 +75,5 @@ S3 = {
 }
 
 SEARCH = {
-    "ONDEMAND" : env.get_key('SEARCH_ONDEMAND')
+    "ONDEMAND" : env.get_key('SEARCH_ONDEMAND') == 'True'
 }
