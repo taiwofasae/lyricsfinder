@@ -10,7 +10,7 @@ import uuid
 def execute_search(sender, instance, **kwargs):
     log.info("'Post_save on Search' dispatch called")
 
-    execute_search(instance.id.hex)
+    execute_search(instance.id)
 
 def execute_pending_search_phrases():
     songsearch.execute_pending_search_phrases()
@@ -22,4 +22,4 @@ def execute_search(search_id):
     if '-' in search_id:
         search_id = search_id.replace('-','')
 
-    async_task('embeddings.songsearch.execute_search', search_id)
+    async_task('common.songsearch.execute_search', search_id)

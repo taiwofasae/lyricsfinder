@@ -74,10 +74,12 @@ lyrics_board = {
         $(ids.lyric_title).text(data.title)
         $(ids.lyric_content).val(data.lyrics)
         $(ids.sim_score).text(data.sim_score)
-        $(classes.search_phrase).text($(ids.search_phrase).val())
+        $(classes.search_phrase).text(window.search_phrase)
     },
 
-    show_pane: () => $(ids.content_pane).removeClass('hidden')
+    show_pane: () => $(ids.content_pane).removeClass('hidden'),
+
+    hide_pane: () => $(ids.content_pane).addClass('hidden')
 }
 
 const generate_custom_uuid = () => ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
@@ -92,7 +94,7 @@ search_box = {
         $(ids.uuid).val(uuid)
     },
     clear: () => {
-        this.reset()
+        search_box.reset()
         $(ids.search_phrase).val('')
     }
 }
@@ -123,6 +125,8 @@ window.poller = 0
 window.poller_count = 0
 window.POLLER_STARTED = false
 
+window.search_phrase = null
+
 polling = {
     start: function(){
         if (window.POLLER_STARTED) return
@@ -132,6 +136,7 @@ polling = {
             else {
                 console.log("Polled api 10 times. Forcing it now...")
                 clearInterval(window.poller)
+                window.poller_count = 0
             }
             window.poller_count++
         }, 2000)
@@ -156,12 +161,16 @@ $(document).ready(function () {
     $("form").submit(function (event) {
 
         animations.loading.start()
-        lyrics_list.reset()
+
+        lyrics_board.hide_pane()
+        
         
       var formData = {
         uuid: $(ids.uuid).val(),
         search_phrase: $(ids.search_phrase).val(),
       };
+
+      window.search_phrase = $(ids.search_phrase).val()
   
       $.ajax({
         type: "POST",
@@ -171,13 +180,14 @@ $(document).ready(function () {
         encode: true,
       }).done(function (data) {
         if (data.status){
+            lyrics_list.reset()
             lyrics_list.populate(data.lyrics)
             lyrics = data.lyrics
             lyrics_list.select(0);
             animations.done();
             animations.loading.end()
 
-            search_box.reset()
+            search_box.clear()
 
             lyrics_board.show_pane()
 

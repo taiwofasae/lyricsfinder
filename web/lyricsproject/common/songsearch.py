@@ -17,6 +17,11 @@ def execute_undone_search_phrases():
     for search_id in get_undone_searches():
         execute_search(search_id)
 
+def execute_search_top10(search_id):
+
+    _execute_search(search_id, _search_top10)
+
+
 def execute_search_now(search_id):
 
     _execute_search(search_id, _search_now)
@@ -25,6 +30,14 @@ def execute_search_now(search_id):
 def execute_search(search_id):
 
     _execute_search(search_id, _search)
+
+def _search_top10(search_id):
+    
+    song_ids, sim_scores = linear_db.top_10_similarity_scores(search_id)
+
+    log.info("updating/inserting into db")
+    update_or_insert_songsearches_by_search_id(search_id, song_ids, sim_scores)
+
 
 def _search_now(search_id):
     

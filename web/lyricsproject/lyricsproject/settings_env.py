@@ -41,6 +41,20 @@ Q_CLUSTER = {
     }
 }
 
+Q_CLUSTER = {
+    'name': 'lyricsapp',
+    'workers': 4,
+    'timeout': 60,
+    'retry': 90,
+    'queue_limit': 100,
+    'bulk': 5,
+    'sqs': {
+        'aws_region': env.get_key('AWS_DEFAULT_REGION'),
+        'aws_access_key_id': env.get_key('AWS_ACCESS_KEY_ID'),
+        'aws_secret_access_key': env.get_key('AWS_SECRET_ACCESS_KEY')
+    }
+}
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
