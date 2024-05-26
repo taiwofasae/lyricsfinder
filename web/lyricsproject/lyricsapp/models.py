@@ -12,7 +12,8 @@ class TimeStampedModel(models.Model):
 class Song(TimeStampedModel):
     """Model representing a song"""
     id = models.AutoField(primary_key=True)
-    title = models.CharField(max_length=50, unique=True)
+    title = models.CharField(max_length=50)
+    artist = models.CharField(max_length=50)
     lyrics = models.TextField(max_length=2000)
     char_length = models.IntegerField(null=True, editable=False)
 
@@ -31,9 +32,9 @@ class Song(TimeStampedModel):
     class Meta:
         constraints = [
             UniqueConstraint(
-                Lower('title'),
-                name='song_title_case_insensitive_unique',
-                violation_error_message="Song already exists (case insensitive match)"
+                fields=['title','artist'],
+                name='song_title_artist_case_insensitive_unique',
+                violation_error_message="Song and artist already exists (case insensitive match)"
             ),
         ]
     

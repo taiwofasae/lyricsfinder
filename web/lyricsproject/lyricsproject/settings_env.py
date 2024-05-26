@@ -24,12 +24,9 @@ def _build_db_connection(database_name = None):
         'PORT': env.get_int_key('MYSQL_DB_PORT')
     }
 
-DATABASES = {
-    'default': _build_db_connection(),
-    'azlyrics': _build_db_connection('azlyrics'),
-    'metrolyrics': _build_db_connection('metrolyrics')
-}
-
+DATABASES = {'default': _build_db_connection()}
+for db_connection in ['azlyrics', 'metrolyrics','afrobeats']:
+    DATABASES[db_connection] = _build_db_connection(db_connection)
 
 STATIC_URL = env.get_key('STATIC_URL') or 'static/'
 
@@ -50,8 +47,8 @@ Q_CLUSTER = {
 Q_CLUSTER = {
     'name': env.get_key('AWS_SQS_QUEUE') or 'lyricsapp-dev',
     'workers': 4,
-    'timeout': 60,
-    'retry': 90,
+    'timeout': 180,
+    'retry': 900,
     'queue_limit': 100,
     'bulk': 5,
     'sqs': {

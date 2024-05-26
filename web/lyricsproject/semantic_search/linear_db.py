@@ -2,16 +2,30 @@ from embeddings import embeddings
 from semantic_search import search_helpers
 from common import songsearch, log
 
-def top_10_similarity_scores(search_id):
+def top_10_similarity_scores_yield(search_id, batch_size=1000):
     scores = []
     song_ids = []
 
-    for (_, _song_ids, _scores, _, _) in similarity_scores_by_search_id(search_id, batch_size=1000):
+    for (batch_no, _song_ids, _scores, _, _) in similarity_scores_by_search_id(search_id, batch_size=batch_size):
         _song_ids, _scores = _extract_top_n_scores(_song_ids, _scores, n=10)
         scores.extend(_scores)
         song_ids.extend(_song_ids)
 
-    return _extract_top_n_scores(song_ids, scores, n=10)
+        # extract top 10 from all scores so far
+        _song_ids, _scores = _extract_top_n_scores(song_ids, scores, n=10)
+
+        yield (batch_no, _song_ids, _scores)
+
+def top_10_similarity_scores(search_id, batch_size=1000):
+    scores = []
+    song_ids = []
+
+    for (batch_no, _song_ids, _scores) in top_10_similarity_scores_yield(search_id, batch_size=batch_size):
+
+        # extract top 10 from all scores so far
+        song_ids, scores = _song_ids, _scores
+
+    return song_ids, scores
 
 def top_10_similarity_scores_by_search_phrase(search_phrase):
     scores = []

@@ -29,16 +29,13 @@ def search(request):
             # else create it and return response.
 
             if settings.SEARCH.get("ONDEMAND", False):
-                search_result = _search_on_demand(uuid, search_phrase)
+                search_result, status = _search_on_demand(uuid, search_phrase)
             else:
-                search_result = _search(uuid, search_phrase)
+                search_result, status = _search(uuid, search_phrase)
 
-            if search_result:
-                response_data = create_search_response(uuid, search_result, True)
+            response_data = create_search_response(uuid, search_result, status)
 
-                return http.JsonResponse(response_data)
-        
-            return http.JsonResponse(create_search_response(uuid, [], False))
+            return http.JsonResponse(response_data)
         
         return http.HttpResponseBadRequest("Invalid form.")
 
@@ -50,11 +47,11 @@ def _search(uuid, search_phrase):
     if not search_obj:
         search_obj = _create_search(uuid, search_phrase)
 
-    # if completed, return results
+    result = []
     if search_obj.status == 'DONE':
-        return [x.serialize_to_json() for x in songsearch.get_songs_for_search(search_id=uuid)]
+        result = [x.serialize_to_json() for x in songsearch.get_songs_for_search(search_id=uuid)]
 
-    return []
+    return result, search_obj.status == 'DONE'
 
 def _search_on_demand(uuid, search_phrase):
 

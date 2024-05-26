@@ -26,6 +26,18 @@ def search_on_demand(search_phrase):
 
     return output
 
+def execute_revolving_search(search_id):
+
+    _execute_search(search_id, _revolving_search)
+
+def _revolving_search(search_id):
+    batch_size = 1000
+    for batch_no, song_ids, scores in linear_db.top_10_similarity_scores_yield(search_id, batch_size = batch_size):
+        log.info("Batch {}/{}".format(batch_no, batch_size))
+        bulk_update_songsearch(search_id, song_ids, scores)
+
+    log.info("Revolving search done in {} batches".format(batch_size))
+        
 
 def execute_search(search_id):
 
@@ -35,8 +47,8 @@ def _search(search_id):
     
     song_ids, sim_scores = linear_db.top_10_similarity_scores(search_id)
 
-    log.info("updating/inserting into db")
-    update_or_insert_songsearches_by_search_id(search_id, song_ids, sim_scores)
+    log.info("inserting into db")
+    bulk_update_songsearch(search_id, song_ids, sim_scores)
 
 
 
@@ -82,32 +94,55 @@ def get_undone_searches():
 
     return [id for id, phrase in results]
 
-def get_first_todo_song(search_id):
-    results = database.fetch(models.SongSearch.MysqlCommands.get_first_unexecuted(search_id))
-    
-    return results and results[0] and results[0][0]
-
-def update_or_insert_songsearch(song_id, search_id, similarity_score):
+def insert_songsearch(song_id, search_id, similarity_score):
 
     significant = 1 if similarity_score > settings.SIMILARITY_SCORE_THRESHOLD else 0
 
-    try:
-        database.execute(models.SongSearch.MysqlCommands.insert(song_id, search_id, similarity_score, significant))
-    except:
-        pass
-    finally:
-        database.execute(models.SongSearch.MysqlCommands.update(song_id, search_id, similarity_score, significant))
-
-def update_or_insert_songsearches_by_search_id(search_id, song_ids, similarity_scores):
-    
-    for (song_id, similarity_score) in zip(song_ids, similarity_scores):
-        update_or_insert_songsearch(song_id, search_id, similarity_score)
+    database.execute(models.SongSearch.MysqlCommands.insert(song_id, search_id, similarity_score, significant))
 
 def insert_songsearches_by_search_id(search_id, song_ids, similarity_scores):
-
+    
     for (song_id, similarity_score) in zip(song_ids, similarity_scores):
-        update_or_insert_songsearch(song_id, search_id, similarity_score)
+        insert_songsearch(song_id, search_id, similarity_score)
         
+def bulk_insert_songsearch(song_ids, search_id, similarity_scores):
+    database.execute(models.SongSearch.MysqlCommands.bulk_insert(song_ids, [search_id for id in song_ids],
+                                                                 similarity_scores, 
+                                                                 [0 for id in song_ids]))
+    
+def _bulk_delete_songsearch(search_id, song_ids = None, delete_all = False):
+    if song_ids:
+        [database.execute(models.SongSearch.MysqlCommands.delete(song_id, search_id)) for song_id in song_ids]
+    else:
+        if delete_all:
+            database.execute(models.SongSearch.MysqlCommands.bulk_delete(search_id))
+
+def update_songsearch(song_id, search_id, similarity_score):
+    database.execute(models.SongSearch.MysqlCommands.update(song_id, search_id, similarity_score, significant=0))
+
+def bulk_update_songsearch(search_id, song_ids, similarity_scores):
+    stale_song_ids, stale_scores = get_scores_for_song_id_range(search_id, min(song_ids), max(song_ids))
+
+    new_song_ids = []
+    new_scores = []
+    updating = []
+    for song_id, score in zip(song_ids, similarity_scores):
+        if song_id in stale_song_ids:
+            # update
+            updating.append(song_id)
+            update_songsearch(song_id, search_id, score)
+            stale_song_ids.pop(song_id)
+        else:
+            # insert
+            new_song_ids.append(song_id)
+            new_scores.append(score)
+
+    bulk_insert_songsearch(new_song_ids, search_id, new_scores)
+    # delete stale. Thread safe
+    _bulk_delete_songsearch(search_id, stale_song_ids)
+    
+
+    
 
 ## SEARCH
 
@@ -145,10 +180,10 @@ def get_songs_for_search(search_id, page_no=0, batch_size = 10):
     results = database.fetch(models.Search.MysqlCommands.get_songs(search_id, offset, limit))
     
 
-    return [models.SongSearch(song_id=None, search_id=search_id, 
+    return [models.SongSearch(song_id=None, search_id=search_id, artist=artist, 
                               title=title, lyrics=lyrics, char_length=char_length,
                               sim_score=sim_score) 
-            for (title, lyrics, char_length, sim_score) in results]
+            for (title, artist, lyrics, char_length, sim_score) in results]
 
 def get_scores_for_searchs(search_id, page_no=0, batch_size = 10):
 
@@ -187,12 +222,12 @@ def get_songs(offset_id = 0, page_no=0, batch_size = 10):
     results = database.fetch(models.Song.MysqlCommands.get_songs(offset_id, offset, limit))
     
 
-    return [models.Song(id, title=title) 
-            for (id, title) in results]
+    return [models.Song(id, artist=artist, title=title) 
+            for (id, artist, title) in results]
 
 def get_song(song_id):
 
     results = database.fetch(models.Song.MysqlCommands.get_song(song_id))
     
-    return [models.Song(id, title=title, lyrics=lyrics) 
-            for (id, title, lyrics) in results][0]
+    return [models.Song(id, artist=artist, title=title, lyrics=lyrics) 
+            for (id, artist, title, lyrics) in results][0]

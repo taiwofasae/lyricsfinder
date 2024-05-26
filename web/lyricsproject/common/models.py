@@ -2,8 +2,9 @@ from common import database
 import datetime
 
 class Song:
-    def __init__(self, song_id, title = "", lyrics = "") -> None:
+    def __init__(self, song_id, artist ="", title = "", lyrics = "") -> None:
         self.song_id = song_id
+        self.artist = artist
         self.title = title
         self.lyrics = lyrics
 
@@ -15,6 +16,7 @@ class Song:
     
     def serialize_to_json(self):
         return {
+            'artist': self.artist,
             'title': self.title,
             'lyrics': self.lyrics,
         }
@@ -22,7 +24,8 @@ class Song:
     class MysqlCommands:
         table_properties = {
             'id': 'int PRIMARY KEY auto_increment',
-            'title': 'varchar(50) unique NOT NULL',
+            'artist': 'varchar(50) NOT NULL',
+            'title': 'varchar(50) NOT NULL',
             'lyrics': 'longtext NOT NULL',
             'char_length': 'int',
             'created_on': 'datetime(6) NOT NULL',
@@ -36,12 +39,12 @@ class Song:
         
         def get_songs(offset_id = 0, offset=0, limit = 10):
             return """
-    SELECT id, title FROM lyricsapp_song WHERE id > {0} limit {1} offset {2};
+    SELECT id, artist, title FROM lyricsapp_song WHERE id > {0} limit {1} offset {2};
 """.format(offset_id, limit, offset)
         
         def get_song(song_id):
             return """
-    SELECT id, title, lyrics from lyricsapp_song where id = '{0}';
+    SELECT id, artist, title, lyrics from lyricsapp_song where id = '{0}';
 """.format(song_id)
 
 class Search:
@@ -90,7 +93,7 @@ class Search:
 
         def get_songs(search_id, offset=0, limit = 10):
             return """
-            SELECT title, lyrics, char_length, sim_score FROM lyricsapp_song 
+            SELECT title, artist, lyrics, char_length, sim_score FROM lyricsapp_song 
             INNER JOIN lyricsapp_songsearch ON lyricsapp_song.id = lyricsapp_songsearch.song_id
             WHERE search_id = '{0}' ORDER BY sim_score desc
             limit {1} offset {2};
@@ -116,9 +119,10 @@ class Search:
     
 class SongSearch:
 
-    def __init__(self, song_id, search_id, title, lyrics, char_length, sim_score) -> None:
+    def __init__(self, song_id, search_id, artist, title, lyrics, char_length, sim_score) -> None:
         self.song_id = song_id
         self.search_id = search_id
+        self.artist = artist
         self.title = title
         self.lyrics = lyrics
         self.char_length = char_length
@@ -126,6 +130,7 @@ class SongSearch:
 
     def serialize_to_json(self):
         return {
+            'artist': self.artist,
             'title': self.title,
             'lyrics': self.lyrics,
             'char_length': self.char_length,
@@ -151,11 +156,30 @@ class SongSearch:
 """.format(search_id)
         
         def insert(song_id, search_id, similarity_score, significant):
-            return """
-                INSERT INTO lyricsapp_songsearch (song_id, search_id, sim_score, significant, created_on) VALUES ({0},'{1}',{2},{3},{4});
-            """.format(song_id, search_id, similarity_score, significant, database.to_db_time_format_str(datetime.datetime.now()))
+            return MysqlCommands.bulk_insert([song_id], [search_id], [similarity_score], [significant])
+        
+        def bulk_insert(song_ids, search_ids, similarity_scores, significants):
+            exec_string = """
+                INSERT INTO lyricsapp_songsearch (song_id, search_id, sim_score, significant, created_on) VALUES  
+                """
+            for song_id, search_id, sim_score, significant in zip(song_ids, search_ids, similarity_scores, significants):
+                exec_string += " ({0},'{1}',{2},{3},{4}),".format(
+                    song_id, search_id, sim_score, significant, database.to_db_time_format_str(datetime.datetime.now()))
+            exec_string = exec_string[:-1] + ';'
+
+            return exec_string
+
 
         def update(song_id, search_id, similarity_score, significant):
             return """
                 UPDATE lyricsapp_songsearch SET sim_score = {2}, significant = {3} WHERE song_id = {0} and search_id = '{1}';
             """.format(song_id, search_id, similarity_score, significant)
+        
+        def delete(song_id, search_id):
+            return """
+                DELETE FROM lyricsapp_songsearch WHERE song_id = {0} and search_id = '{1}';
+            """.format(song_id, search_id)
+        def bulk_delete(search_id, limit=200):
+            return """
+                DELETE FROM lyricsapp_songsearch WHERE search_id = '{0}' LIMIT {1};
+            """.format(search_id, limit)

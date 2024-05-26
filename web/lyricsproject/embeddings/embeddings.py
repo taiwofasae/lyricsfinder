@@ -66,7 +66,7 @@ def get_song_details(song_ids):
     songs = []
     for song_id in song_ids:
         songs.append(songsearch.get_song(song_id))
-    return [(song.song_id, song.title, song.lyrics) for song in songs]
+    return [(song.song_id, song.artist, song.title, song.lyrics) for song in songs]
 
 def fetch_embeddings_for_song_id(song_id):
 
@@ -189,7 +189,6 @@ def task_fetch_embeddings_for_all_songs(batch_size = 100):
 
         songs = songsearch.get_songs(page_no=batch_id, batch_size=batch_size)
         song_ids = [song.song_id for song in songs]
-
 
         new_songs = [songsearch.get_song(song_id) for song_id in song_ids if song_id not in existing_song_ids]
 

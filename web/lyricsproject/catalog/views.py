@@ -13,11 +13,11 @@ def execute(request, search_id):
     if isinstance(search_id, str):
         search_id = search_id.replace("-","")
         
-    #dispatchers.execute_search(search_id)
+    dispatchers.execute_search(search_id)
     #songsearch.execute_undone_search_phrases()
     #songsearch.execute_search(search_id)
     #embeddings.get_embeddings_for_search_phrase(search_id)
-    embeddings.task_fetch_embeddings_for_all_songs(int(search_id))
+    #embeddings.task_fetch_embeddings_for_all_songs(int(search_id))
 
     return HttpResponse(status=200)
 
