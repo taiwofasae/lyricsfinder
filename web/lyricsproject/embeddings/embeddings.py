@@ -27,7 +27,7 @@ def get_embeddings_for_songs(song_ids):
     if null_idx:
         null_ids = [song_ids[i] for i in null_idx]
         log.info("fetching embedding from api")
-        null_embedding = fetch_embeddings_for_songs(null_ids)
+        null_embedding = fetch_embeddings_for_song_ids(null_ids)
 
         for j in range(len(null_idx)):
             i = null_idx[j]
@@ -68,35 +68,48 @@ def get_song_details(song_ids):
         songs.append(songsearch.get_song(song_id))
     return [(song.song_id, song.title, song.lyrics) for song in songs]
 
-def fetch_embeddings_for_song(song_id):
+def fetch_embeddings_for_song_id(song_id):
 
-    return fetch_embeddings_for_songs([song_id])[0]
+    return fetch_embeddings_for_song_ids([song_id])[0]
 
-def fetch_embeddings_for_songs(song_ids):
-
+def fetch_embeddings_for_song_ids(song_ids):
+    """
+    Fetches embeddings for each song or updates it
+    """
     log.info("getting song details for {0} song_ids".format(len(song_ids)))
 
     if len(song_ids) < 5:
         log.info("song_ids: {0}'"
                     .format(','.join([str(song_id) for song_id in song_ids])))
 
-    songs = get_song_details(song_ids)
+    songs = [songsearch.get_song(song_id) for song_id in song_ids]
 
-    if PERSIST:
-        log.info("making sure folder is accessible before calling api")
-        file_embeddings.save_song_embedding(song_id=song_ids[0], embeddings=[])
+    return fetch_embeddings_for_songs(songs)
 
-    
-    if len(song_ids) < 5:
-        titles = [song[1] for song in songs]
-        log.info("Titles: {0}".format('\n'.join(titles)))
+def fetch_embeddings_for_song(song):
+    return fetch_embeddings_for_songs([song])[0]
 
-    embeddings = embed_api.get_embeddings_for_phrases([lyrics for (song_id, title, lyrics) in songs])
+def fetch_embeddings_for_songs(songs):
+    """
+    Fetches embeddings for each song or updates it
+    """
+    embeddings = []
+    if songs and len(songs) > 0:
+        if PERSIST:
+            log.info("making sure folder is accessible before calling api")
+            file_embeddings.save_song_embedding(song_id=songs[0].song_id, embeddings=[])
 
-    if PERSIST:
-        log.info("inserting/updating song embeddings")
-        for song_id, e in zip(song_ids, embeddings):
-            file_embeddings.save_song_embedding(song_id, e)
+        
+        if len(songs) < 5:
+            titles = [song.title for song in songs]
+            log.info("Titles: {0}".format('\n'.join(titles)))
+
+        embeddings = embed_api.get_embeddings_for_phrases([song.lyrics for song in songs])
+
+        if PERSIST:
+            log.info("inserting/updating song embeddings")
+            for song_id, e in zip([song.song_id for song in songs], embeddings):
+                file_embeddings.save_song_embedding(song_id, e)
 
     return embeddings
 
@@ -154,3 +167,34 @@ def fetch_embeddings_for_search_phrases(search_phrases):
 def fetch_embeddings_for_search_phrase(search_phrase):
 
     return fetch_embeddings_for_search_phrases([search_phrase])[0]
+
+
+def task_fetch_embeddings_for_all_songs(batch_size = 100):
+    # fetch songs without embeddings
+
+    if not PERSIST:
+        log.info("PERSIST not True. Skipping embeddings fetch.")
+        return
+    
+    num_songs = songsearch.get_num_songs()
+    batches = (num_songs + batch_size - 1) // batch_size
+
+    existing_song_ids = file_embeddings.all_song_statuses()
+
+    
+    for batch_id in range(0, batches):
+        
+        batch_no = batch_id + 1
+        log.info("Fetching for batch {0}/{1}".format(batch_no, batches))
+
+        songs = songsearch.get_songs(page_no=batch_id, batch_size=batch_size)
+        song_ids = [song.song_id for song in songs]
+
+
+        new_songs = [songsearch.get_song(song_id) for song_id in song_ids if song_id not in existing_song_ids]
+
+        fetch_embeddings_for_songs(new_songs)
+
+    log.info("Batch fetching done")
+
+

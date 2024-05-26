@@ -21,6 +21,10 @@ def execute_search(search_id):
     async_task('common.songsearch.execute_search', search_id)
 
 
+def fetch_embeddings(batch_size=100):
+
+    async_task('embeddings.embeddings.task_fetch_embeddings_for_all_songs', batch_size)
+
 def _sanitize_search_id(search_id):
     if isinstance(search_id,uuid.UUID):
         search_id = search_id.hex
