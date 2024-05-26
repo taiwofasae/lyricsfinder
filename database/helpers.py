@@ -151,10 +151,10 @@ class Mysql:
         return string
 
     literal_insert_string = r"""
-        INSERT INTO lyricsapp_song (title, lyrics, char_length, created_on) VALUES (%s,%s,%s,current_date());
+        INSERT INTO lyricsapp_song (artist, title, lyrics, char_length, created_on) VALUES (%s, %s,%s,%s,current_date());
         """
-    def execute_insert_bulk(self, song, lyrics, char_length, created_on):
+    def execute_insert_bulk(self, artist, song, lyrics, char_length, created_on):
         
-        self.execute_many(Mysql.literal_insert_string, [(s,l,c) for s,l,c in zip(song, lyrics, char_length)])
+        self.execute_many(Mysql.literal_insert_string, [(a, s,l,c) for a, s,l,c in zip(artist, song, lyrics, char_length)])
 
         self.commit()
