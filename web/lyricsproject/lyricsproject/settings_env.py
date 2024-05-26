@@ -12,18 +12,24 @@ ALLOWED_HOSTS = allowed_hosts.split(',') if allowed_hosts else []
 allowed_origins = env.get_key('CORS_ALLOWED_ORIGINS')
 CORS_ALLOWED_ORIGINS = allowed_origins.split(',') if allowed_origins else []
 
-DATABASES = {
-    'default': {
+def _build_db_connection(database_name = None):
+    return {
         # 'ENGINE': 'django.db.backends.sqlite3',
         # 'NAME': BASE_DIR / 'db.sqlite3',
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': env.get_key('MYSQL_DB_NAME'),
+        'NAME': database_name or env.get_key('MYSQL_DB_NAME'),
         'USER': env.get_key('MYSQL_DB_USER'),
         'PASSWORD': env.get_key('MYSQL_DB_PASSWORD'),
         'HOST': env.get_key('MYSQL_DB_HOST'),
         'PORT': env.get_int_key('MYSQL_DB_PORT')
     }
+
+DATABASES = {
+    'default': _build_db_connection(),
+    'azlyrics': _build_db_connection('azlyrics'),
+    'metrolyrics': _build_db_connection('metrolyrics')
 }
+
 
 STATIC_URL = env.get_key('STATIC_URL') or 'static/'
 
