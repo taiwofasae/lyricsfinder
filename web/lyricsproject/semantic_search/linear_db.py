@@ -6,7 +6,7 @@ def top_10_similarity_scores(search_id):
     scores = []
     song_ids = []
 
-    for (_, _song_ids, _scores) in similarity_scores_by_search_id(search_id, batch_size=1000):
+    for (_, _song_ids, _scores, _, _) in similarity_scores_by_search_id(search_id, batch_size=1000):
         _song_ids, _scores = _extract_top_n_scores(_song_ids, _scores, n=10)
         scores.extend(_scores)
         song_ids.extend(_song_ids)

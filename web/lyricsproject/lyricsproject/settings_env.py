@@ -48,7 +48,7 @@ Q_CLUSTER = {
 }
 
 Q_CLUSTER = {
-    'name': 'lyricsapp',
+    'name': env.get_key('AWS_SQS_QUEUE') or 'lyricsapp-dev',
     'workers': 4,
     'timeout': 60,
     'retry': 90,

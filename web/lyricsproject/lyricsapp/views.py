@@ -47,15 +47,8 @@ def search(request):
 
 def _search(uuid, search_phrase):
     search_obj = songsearch.get_search(uuid)
-    log.info("search_obj:{0}".format(search_obj))
     if not search_obj:
-        models.Search(id = uuid,
-                        phrase = search_phrase,
-                        status = 'PENDING').save()
-        search_obj = songsearch.get_search(uuid)
-
-        dispatchers.execute_search(uuid)
-    
+        search_obj = _create_search(uuid, search_phrase)
 
     # if completed, return results
     if search_obj.status == 'DONE':
@@ -67,6 +60,16 @@ def _search_on_demand(uuid, search_phrase):
 
     songs = songsearch.search_on_demand(search_phrase)
 
-    dispatchers._create_search(uuid, search_phrase)
+    _create_search(uuid, search_phrase)
 
     return songs
+
+def _create_search(uuid, search_phrase):
+    models.Search(id = uuid,
+                        phrase = search_phrase,
+                        status = 'PENDING').save()
+    search_obj = songsearch.get_search(uuid)
+
+    dispatchers.execute_search(uuid)
+
+    return search_obj

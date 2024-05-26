@@ -9,8 +9,8 @@ from lyricsapp import dispatchers
 # Create your views here.
 
 def execute(request, search_id):
-    #dispatchers.execute_search(search_id)
-    songsearch.execute_undone_search_phrases()
+    dispatchers.execute_search(search_id)
+    #songsearch.execute_undone_search_phrases()
     #songsearch.execute_search(search_id)
     #embeddings.get_embeddings_for_search_phrase(search_id)
 

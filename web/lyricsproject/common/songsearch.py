@@ -4,8 +4,6 @@ import datetime
 from semantic_search import linear_db, settings, nms_lib
 import uuid
 
-UPDATE_SCORES_EVERY_TIME = False
-
 def ping_db():
     return database.ping()
 
@@ -28,21 +26,12 @@ def search_on_demand(search_phrase):
 
     return output
 
-def execute_search_top10(search_id):
-
-    _execute_search(search_id, _search_top10)
-
-
-def execute_search_now(search_id):
-
-    _execute_search(search_id, _search_now)
-
 
 def execute_search(search_id):
 
     _execute_search(search_id, _search)
 
-def _search_top10(search_id):
+def _search(search_id):
     
     song_ids, sim_scores = linear_db.top_10_similarity_scores(search_id)
 
@@ -50,23 +39,6 @@ def _search_top10(search_id):
     update_or_insert_songsearches_by_search_id(search_id, song_ids, sim_scores)
 
 
-def _search_now(search_id):
-    
-    song_ids, sim_scores = nms_lib.top_10_similarity_scores(search_id)
-
-    log.info("updating/inserting into db")
-    update_or_insert_songsearches_by_search_id(search_id, song_ids, sim_scores)
-
-def _search(search_id):
-
-    for (batch_no, song_ids, sim_scores, new_song_ids, new_sim_scores) in linear_db.similarity_scores_by_search_id(search_id):
-        log.info("successfully fetched songs for batch no: {0}".format(batch_no))
-        log.info("updating/inserting into db")
-
-        if UPDATE_SCORES_EVERY_TIME:
-            update_or_insert_songsearches_by_search_id(search_id, song_ids, sim_scores)
-        else:
-            update_or_insert_songsearches_by_search_id(search_id, new_song_ids, new_sim_scores)
 
 def _execute_search(search_id, delegate = None):
 
