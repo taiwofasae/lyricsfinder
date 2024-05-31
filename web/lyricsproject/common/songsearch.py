@@ -1,6 +1,6 @@
 from common import database, log, models, embeddings
 import datetime
-from searcher import linear_db
+from searcher import linear_db, linear_search
 import uuid
 
 def ping_db():
@@ -14,8 +14,16 @@ def execute_undone_search_phrases():
     for search_id in get_undone_searches():
         execute_search(search_id)
 
+def _api_call(search_phrase):
+    song_scores = linear_search.api_call(search_phrase)
+    song_ids, sim_scores = [song_score[0] for song_score in song_scores], [song_score[1] for song_score in song_scores]
+
+    return song_ids, sim_scores
+
+
 def search_on_demand(search_phrase):
-    song_ids, sim_scores = linear_db.top_10_similarity_scores_by_search_phrase(search_phrase)
+    #song_ids, sim_scores = linear_db.top_10_similarity_scores_by_search_phrase(search_phrase)
+    song_ids, sim_scores = _api_call(search_phrase=search_phrase)
 
     output = []
     for id, score in zip(song_ids, sim_scores):
@@ -29,7 +37,7 @@ def execute_revolving_search(search_id):
 
     _execute_search(search_id, _revolving_search)
 
-def _revolving_search(search_id):
+def _revolving_search(search_id, searchphrase):
     batch_size = 1000
     for batch_no, song_ids, scores in linear_db.top_10_similarity_scores_yield(search_id, batch_size = batch_size):
         log.info("Batch {}/{}".format(batch_no, batch_size))
@@ -42,9 +50,11 @@ def execute_search(search_id):
 
     _execute_search(search_id, _search)
 
-def _search(search_id):
+def _search(search_id, search_phrase):
+
+    song_ids, sim_scores = _api_call(search_phrase=search_phrase)
     
-    song_ids, sim_scores = linear_db.top_10_similarity_scores(search_id)
+    #song_ids, sim_scores = linear_db.top_10_similarity_scores(search_id)
 
     log.info("inserting into db")
     bulk_update_songsearch(search_id, song_ids, sim_scores)
@@ -71,7 +81,7 @@ def _execute_search(search_id, delegate = None):
     
 
     if delegate:
-        delegate(search_id)
+        delegate(search_id, search.search_phrase)
 
 
     log.info("updating search status for phrase: '{0}'; id: {1} to DONE"

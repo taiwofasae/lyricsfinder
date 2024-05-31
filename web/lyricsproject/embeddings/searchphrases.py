@@ -1,7 +1,6 @@
 from embeddings import settings
 from embeddings import persistence
 from common import songsearch, log
-import importlib
 import numpy as np
 
 PERSIST = settings.EMBEDDINGS_PERSISTENCE

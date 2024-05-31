@@ -34,8 +34,11 @@ async def tutorial(query: Annotated[str | None, Query(max_length=100)] = None):
         results.update({"query": query})
     return results
 
-@app.get('/')
-async def root(phrase: Annotated[str | None, Query(max_length=100)] = None):
+@app.post('/')
+async def root(phrase: Annotated[str, Query(min_length=10, max_length=100)] = None):
+    
+    if not phrase:
+        raise ValueError('phrase can not be empty')
     
     results = search(searchphrase=phrase)
 
