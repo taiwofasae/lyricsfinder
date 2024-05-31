@@ -1,6 +1,6 @@
 import numpy as np
 from embeddings import embeddings
-from semantic_search import search_helpers
+from searcher import search_helpers
 
 
 class Indexing:

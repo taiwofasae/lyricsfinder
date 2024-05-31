@@ -1,7 +1,7 @@
 import numpy as np
 from embeddings import embeddings
 import logging
-from semantic_search import search_helpers
+from searcher import search_helpers
 
 
 def similarity_scores(search_id, song_ids):

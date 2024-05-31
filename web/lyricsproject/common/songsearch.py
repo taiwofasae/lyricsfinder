@@ -1,7 +1,6 @@
-from common import database, log, models
-from embeddings import embeddings
+from common import database, log, models, embeddings
 import datetime
-from semantic_search import linear_db, settings, nms_lib
+from searcher import linear_db
 import uuid
 
 def ping_db():
@@ -96,7 +95,7 @@ def get_undone_searches():
 
 def insert_songsearch(song_id, search_id, similarity_score):
 
-    significant = 1 if similarity_score > settings.SIMILARITY_SCORE_THRESHOLD else 0
+    significant = 0
 
     database.execute(models.SongSearch.MysqlCommands.insert(song_id, search_id, similarity_score, significant))
 

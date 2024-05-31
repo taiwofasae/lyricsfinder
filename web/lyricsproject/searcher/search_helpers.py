@@ -46,3 +46,11 @@ def top_n_songs_indices(songs_embeddings, phrase_embeddings, n=10):
   source = np.asarray(songs_embeddings)
   entry = np.asarray(phrase_embeddings)
   return np.array(cosine_similarity_with_matrix(source=source, entry=entry)).argsort()[:,-n:][:,::-1]
+
+def extract_top_n_scores(song_ids, scores, n=10):
+    if len(song_ids) != len(scores):
+        raise ValueError('len(song_ids) != len(scores)')
+    
+    idx = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:n]
+
+    return [song_ids[i] for i in idx], [scores[i] for i in idx]
