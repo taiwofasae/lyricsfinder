@@ -29,7 +29,7 @@ def search(request):
             # else create it and return response.
 
             if settings.SEARCH.get("ONDEMAND", False):
-                search_result, status = _search_on_demand(uuid, search_phrase)
+                search_result, status = _search_on_demand(uuid, search_phrase), True
             else:
                 search_result, status = _search(uuid, search_phrase)
 
@@ -57,7 +57,9 @@ def _search_on_demand(uuid, search_phrase):
 
     songs = songsearch.search_on_demand(search_phrase)
 
-    _create_search(uuid, search_phrase)
+    search_obj = songsearch.get_search(uuid)
+    if not search_obj:
+        search_obj = _create_search(uuid, search_phrase)
 
     return songs
 
