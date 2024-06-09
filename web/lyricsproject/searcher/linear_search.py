@@ -3,14 +3,15 @@ from common import log
 from embeddings import embeddings
 import requests
 from lyricsproject import env
+import inspect
 
 LINEAR_SEARCH_API = env.get_key('LINEAR_SEARCH_API')
 
 
 
-def linear_search(searchphrase, embeddings_reader, embeddings_model = 'default', chunksize = 1000):
+def linear_search(searchphrase, embeddings_reader, embeddings_model = None, chunksize = 1000):
 
-    search_string_embedding = embeddings.API(embeddings_model).get_embeddings_for_phrases([searchphrase])[0]
+    search_string_embedding = embeddings.selector_fn(embeddings_model)([searchphrase])[0]
 
     log.info("Computed embedding for searchphrase.")
     

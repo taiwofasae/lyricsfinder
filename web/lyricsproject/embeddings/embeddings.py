@@ -1,5 +1,5 @@
 from embeddings import settings
-from embeddings import openai_api
+from embeddings import openai_api, word2vec
 from embeddings import persistence
 from common import songsearch, log
 import importlib
@@ -8,27 +8,45 @@ import numpy as np
 PERSIST = settings.EMBEDDINGS_PERSISTENCE
 
 
-model_dict = {
+key_map = {
         'default': openai_api.get_embeddings_for_phrases,
         'openai': openai_api.get_embeddings_for_phrases,
         'random': lambda phrases: [np.random.rand(768,) for _ in phrases],
     }
 
+# not used
+extension_map = {
+    'w2c': word2vec.Word2Vec
+}
 
-class API:
+def selector_fn(key, model_file = None):
+    log.info(f"selector_fn key:{key}")
+    if callable(key):
+        log.info('selector_fn for embeddings model is callable!')
+        return key
+    
+    fn = key_map['default']
 
-    def __init__(self, model_api = 'default'):
-        if model_api in model_dict:
-            model_api = model_dict[model_api]
+    if key in key_map:
+        fn = key_map[key]
+
+    elif model_file and isinstance(model_file, str):
+        if model_file.endswith('.w2v'):
+            log.info("model file ends with .w2v. Selecting word2vec...")
+            fn = word2vec.Word2Vec(model_file).get_embeddings_for_phrases
         
-        self.model_api = model_api
+        
+
+    
+    return lambda phrases, *args, **kwargs: get_embeddings_for_phrases(fn, phrases=phrases, *args, **kwargs)
 
 
-    def get_embeddings_for_phrases(self, phrases, *args, **kwargs):
-        log.info("getting search phrases for {0} search_ids".format(len(phrases)))
 
-        if len(phrases) < 5:
-            log.info("search_phrases: '{0}'".format('\n'.join(phrases)))
+def get_embeddings_for_phrases(model, phrases, *args, **kwargs):
+    log.info("getting search phrases for {0} search_ids".format(len(phrases)))
 
-        return self.model_api(phrases, *args, **kwargs)
+    if len(phrases) < 5:
+        log.info("search_phrases: '{0}'".format('\n'.join(phrases)))
+
+    return model(phrases, *args, **kwargs)
 

@@ -1,6 +1,7 @@
 import json
 from common import log
 import os
+import shutil
 from lyricsproject import settings
 
 storage_folder = os.path.join(settings.BASE_DIR, 'appdata/')
@@ -17,15 +18,21 @@ def upload_file(file_name, json_data):
 def download_file(file_name, json_deserialize=True):
 
     file_name = os.path.join(storage_folder, file_name)
-    json_data = None
+    
     try:
         with open(file_name, 'r') as f:
-            json_data = json.load(f)
+            if json_deserialize:
+                json_data = json.load(f)
+                return json_data
+            return f.read()
     except Exception as e:
         log.error(e)
         log.info("file reading failed.")
     
-    return json_data
+    return None
+
+def copy(source, dest):
+    shutil.copyfile(get_full_path(source), get_full_path(dest))
 
 def file_exists(file_name):
 
@@ -40,6 +47,11 @@ def make_directory(folder):
     folder = get_full_path(folder)
     if not os.path.exists(folder):
         os.makedirs(folder)
+
+def make_directory_from_filepath(filepath):
+
+    dir_path = os.path.dirname(filepath)
+    make_directory(dir_path)
 
 def delete_file(filepath):
     log.info("deleting file {}".format(filepath))
