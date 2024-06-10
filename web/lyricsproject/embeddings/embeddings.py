@@ -9,8 +9,7 @@ PERSIST = settings.EMBEDDINGS_PERSISTENCE
 
 
 key_map = {
-        'default': openai_api.get_embeddings_for_phrases,
-        'openai': openai_api.get_embeddings_for_phrases,
+        'openai': openai_api.API().get_embeddings_for_phrases,
         'random': lambda phrases: [np.random.rand(768,) for _ in phrases],
     }
 
@@ -25,7 +24,7 @@ def selector_fn(key, model_file = None):
         log.info('selector_fn for embeddings model is callable!')
         return key
     
-    fn = key_map['default']
+    fn = key_map['random']
 
     if key in key_map:
         fn = key_map[key]
