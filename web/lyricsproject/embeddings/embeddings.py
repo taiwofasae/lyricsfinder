@@ -32,7 +32,7 @@ def selector_fn(key, model_file = None):
 
     elif model_file and isinstance(model_file, str):
         if key == 'word2vec':
-            log.info("model file ends with .w2v. Selecting word2vec...")
+            log.info("Selecting word2vec...")
             fn = word2vec.Word2Vec(model_file).get_embeddings_for_phrases
         
         

@@ -21,7 +21,7 @@ def linear_search(searchphrase, embeddings_reader, embeddings_model = None, chun
                                                      chunksize=chunksize, n=10):
         song_ids, scores = _song_ids, _scores
 
-    return [(int(id)+2333, float(score)) for id, score in zip(song_ids, scores)]
+    return [(int(id), float(score)) for id, score in zip(song_ids, scores)]
 
 
 def api_call(search_phrase, embeddings_model = None):

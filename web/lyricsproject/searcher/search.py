@@ -20,6 +20,7 @@ def revolving_yield(embeddings_reader, searchphrase_embeddings, chunksize = 1000
         song_ids, scores = search_helpers.extract_top_n_scores(song_ids, scores, n=n)
 
         log.debug("top n scores: {}".format(scores))
+        log.debug("top n song_ids: {}".format(song_ids))
 
         yield song_ids, scores
 
