@@ -31,7 +31,7 @@ def search(request):
             if settings.SEARCH.get("ONDEMAND", False):
                 search_result, status = _search_on_demand(uuid, search_phrase), True
             else:
-                search_result, status = _search(uuid, search_phrase)
+                search_result, status = _search_dispatch(uuid, search_phrase)
 
             response_data = create_search_response(uuid, search_result, status)
 
@@ -42,7 +42,7 @@ def search(request):
     else:
         return http.HttpResponseBadRequest("Invalid method. Use POST")
 
-def _search(uuid, search_phrase):
+def _search_dispatch(uuid, search_phrase):
     search_obj = songsearch.get_search(uuid)
     if not search_obj:
         search_obj = _create_search(uuid, search_phrase)
@@ -55,11 +55,10 @@ def _search(uuid, search_phrase):
 
 def _search_on_demand(uuid, search_phrase):
 
-    songs = songsearch.search_on_demand(search_phrase)
+    songs, status = _search_dispatch(uuid, search_phrase)
 
-    search_obj = songsearch.get_search(uuid)
-    if not search_obj:
-        search_obj = _create_search(uuid, search_phrase)
+    if not songs:
+        songs = songsearch.search_on_demand(search_phrase)
 
     return songs
 
