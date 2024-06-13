@@ -4,7 +4,7 @@ import os
 import shutil
 from lyricsproject import settings
 
-storage_folder = os.path.join(settings.BASE_DIR, 'appdata/')
+storage_folder = os.path.join(settings.BASE_DIR, 'appdata')
 
 
 def upload_file(file_name, json_data):

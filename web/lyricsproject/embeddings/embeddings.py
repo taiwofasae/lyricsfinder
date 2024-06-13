@@ -10,16 +10,17 @@ PERSIST = settings.EMBEDDINGS_PERSISTENCE
 
 key_map = {
         'openai': openai_api.API().get_embeddings_for_phrases,
-        'random': lambda phrases: [np.random.rand(768,) for _ in phrases],
+        'random': lambda phrases: [np.random.rand(768,) for _ in phrases]
     }
 
 # not used
 extension_map = {
-    'w2c': word2vec.Word2Vec
+    'w2v': word2vec.Word2Vec
 }
 
 def selector_fn(key, model_file = None):
     log.info(f"selector_fn key:{key}")
+    log.info(f"model_file:{model_file}") if model_file else None
     if callable(key):
         log.info('selector_fn for embeddings model is callable!')
         return key
@@ -30,7 +31,7 @@ def selector_fn(key, model_file = None):
         fn = key_map[key]
 
     elif model_file and isinstance(model_file, str):
-        if model_file.endswith('.w2v'):
+        if key == 'word2vec':
             log.info("model file ends with .w2v. Selecting word2vec...")
             fn = word2vec.Word2Vec(model_file).get_embeddings_for_phrases
         
