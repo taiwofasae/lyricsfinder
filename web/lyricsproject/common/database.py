@@ -35,21 +35,21 @@ def to_db_time_format_str(timestamp):
 
     return db_time
 
-def execute(command):
+def execute(command, *args, **kwargs):
     log.info('execute:{0}'.format(command))
     cnx = open_connection()
 
     if cnx and cnx.is_connected():
         with cnx.cursor() as cursor:
 
-            result = cursor.execute(command)
+            result = cursor.execute(command, *args, **kwargs)
 
             cnx.commit()
 
         cnx.close()
 
 
-def fetch(command):
+def fetch(command, *args, **kwargs):
     log.info('fetch:{0}'.format(command))
     cnx = open_connection()
 
@@ -57,7 +57,7 @@ def fetch(command):
     if cnx and cnx.is_connected():
         with cnx.cursor() as cursor:
 
-            result = cursor.execute(command)
+            result = cursor.execute(command, *args, **kwargs)
 
             rows = cursor.fetchall()
 

@@ -43,7 +43,7 @@ async def tutorial(query: Annotated[str | None, Query(max_length=100)] = None):
     return results
 
 @app.post('/')
-async def root(phrase: Annotated[str, Query(min_length=10, max_length=100)] = None):
+async def root(phrase: Annotated[str, Query(min_length=5, max_length=100)] = None):
     
     if not phrase:
         raise ValueError('phrase can not be empty')

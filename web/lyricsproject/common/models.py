@@ -46,6 +46,23 @@ class Song:
             return """
     SELECT id, artist, title, lyrics from lyricsapp_song where id = '{0}';
 """.format(song_id)
+        
+        def exact_search(search_phrase):
+            # remove strange characters from search phrase
+            search_phrase = search_phrase.translate(str.maketrans(dict.fromkeys('%"#@*&^/\\')))
+            return """
+    select id,
+    (   
+            (
+                LENGTH(lyrics)
+                - LENGTH( REPLACE ( lower(lyrics), "{0}", "") ) 
+            ) / LENGTH("{0}")        
+        ) AS count_in_lyrics, 
+        (CASE WHEN title like '%{0}%' THEN 1 ELSE 0 END) AS is_in_title
+        from lyricsapp_song 
+    where lyrics like '%{0}%' 
+    order by (count_in_lyrics + is_in_title) desc, artist, id desc;
+""".format(search_phrase)
 
 class Search:
     def __init__(self, id, search_phrase, api_version, done_timestamp,status) -> None:

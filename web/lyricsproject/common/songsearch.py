@@ -3,16 +3,65 @@ import datetime
 from searcher import linear_db, linear_search
 import uuid
 
+def _pairwise_to_two_lists(pairwise):
+    return [x for x, _ in pairwise], [y for _, y in pairwise]
+
+def _two_lists_to_pairwise(list1, list2):
+    return [(x,y) for x,y in zip(list1, list2)]
+
+def _sort_tuples_by_values(tuple_list):
+    return sorted(tuple_list, key=lambda item: item[1], reverse=True)
+
+
+def _union_results(results1, results2):
+
+    x1 = dict(zip(results1[0], results1[1]))
+    x2 = dict(zip(results2[0], results2[1]))
+    for id in x2:
+        if id in x1 and x2[id] < x1[id]:
+            # do nothing
+            pass
+        else:
+            x1[id] = x2[id]
+
+    results = _sort_tuples_by_values(x1.items())
+
+    return _pairwise_to_two_lists(results)
+
+def _avg_results(results_list, N):
+
+    results = _sum_results(results_list)
+
+    return results[0], [x/N for x in results[1]]
+
+def _sum_results(results_list):
+    if not len(results_list):
+        return []
+    x = dict(zip(results_list[0][0],results_list[0][1]))
+    for result in results_list[1:]:
+        for id, score in zip(result[0],result[1]):
+            if id in x:
+                x[id] += score
+            else:
+                x[id] = score
+    
+    results = _sort_tuples_by_values(x.items())
+
+    return _pairwise_to_two_lists(results)
+
+def _top_n_results(result, n=10):
+    return result[0][:n], result[1][:n]
+
 def ping_db():
     return database.ping()
 
 def execute_pending_search_phrases():
     for search_id in get_pending_searches():
-        execute_search(search_id)
+        execute_search_persist(search_id)
 
 def execute_undone_search_phrases():
     for search_id in get_undone_searches():
-        execute_search(search_id)
+        execute_search_persist(search_id)
 
 def _api_call(search_phrase):
     song_scores = linear_search.api_call(search_phrase)
@@ -21,9 +70,33 @@ def _api_call(search_phrase):
     return song_ids, sim_scores
 
 
+def exact_search(search_phrase, offset_score = 5):
+
+    results = database.fetch(models.Song.MysqlCommands.exact_search(search_phrase))
+
+    return [id for id, _, _ in results], [lyrics_count+total_count+offset_score for id, lyrics_count, total_count in results]
+
+def exact_search_words(search_phrase, offset_score = 5):
+
+    results = [exact_search(x, offset_score=offset_score) for x in search_phrase.split()]
+    return _avg_results(results, len(results))
+
+
+def _search(search_phrase):
+    result = exact_search(search_phrase=search_phrase, offset_score=10)
+    log.info(f"exact_search: {len(result[0])}")
+    
+    result = _union_results( result, exact_search_words(search_phrase=search_phrase, offset_score=3))
+    log.info(f"after splitting search phrase: {len(result[0])}")
+
+    result = _union_results(result, _api_call(search_phrase=search_phrase))
+    log.info(f"after semantic search: {len(result[0])}")
+
+    return _top_n_results(result)
+
 def search_on_demand(search_phrase):
     #song_ids, sim_scores = linear_db.top_10_similarity_scores_by_search_phrase(search_phrase)
-    song_ids, sim_scores = _api_call(search_phrase=search_phrase)
+    song_ids, sim_scores = _search(search_phrase=search_phrase)
 
     output = []
     for id, score in zip(song_ids, sim_scores):
@@ -46,13 +119,14 @@ def _revolving_search(search_id, searchphrase):
     log.info("Revolving search done in {} batches".format(batch_size))
         
 
-def execute_search(search_id):
+def execute_search_persist(search_id):
 
-    _execute_search(search_id, _search)
+    _execute_search(search_id, _search_persist)
 
-def _search(search_id, search_phrase):
 
-    song_ids, sim_scores = _api_call(search_phrase=search_phrase)
+def _search_persist(search_id, search_phrase):
+
+    song_ids, sim_scores = _search(search_phrase=search_phrase)
     
     #song_ids, sim_scores = linear_db.top_10_similarity_scores(search_id)
 
@@ -240,3 +314,4 @@ def get_song(song_id):
     
     return [models.Song(id, artist=artist, title=title, lyrics=lyrics) 
             for (id, artist, title, lyrics) in results][0]
+

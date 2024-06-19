@@ -15,6 +15,7 @@ ids = {
     search_phrase: '#search_phrase',
     lyrics_list: 'ul#lyrics_list',
     lyric_title: '#title',
+    lyric_artist: '#artist',
     lyric_content: '#content',
     uuid: '#uuid',
     sim_score: '#sim_score',
@@ -37,7 +38,7 @@ lyrics_list = {
     },
     
     set_data: function (data, index){
-        title = `${index + 1}. ${data.title} (${data.sim_score})`;
+        title = `${index + 1}. ${data.title} - ${data.artist} (${data.sim_score})`;
         $($(ids.lyrics_list + ' li')[index]).html(title).removeClass('hidden');
     },
     
@@ -68,10 +69,12 @@ lyrics_list = {
 lyrics_board = {
     clear: () => {
         $(ids.lyric_title).html('?')
+        $(ids.artist).html('?')
         $(ids.lyric_content).html('?')
     },
     set: (data) => {
         $(ids.lyric_title).text(data.title)
+        $(ids.lyric_artist).text(data.artist)
         $(ids.lyric_content).val(data.lyrics)
         $(ids.sim_score).text(data.sim_score)
         $(classes.search_phrase).text(window.search_phrase)
