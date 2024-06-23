@@ -2,6 +2,7 @@ from common import database, log, models, embeddings
 import datetime
 from searcher import linear_db, linear_search
 import uuid
+import itertools
 
 def _pairwise_to_two_lists(pairwise):
     return [x for x, _ in pairwise], [y for _, y in pairwise]
@@ -31,6 +32,9 @@ def _union_results(results1, results2):
 def _avg_results(results_list, N):
 
     results = _sum_results(results_list)
+
+    if not len(results):
+        return [], []
 
     return results[0], [x/N for x in results[1]]
 
@@ -81,16 +85,27 @@ def exact_search_words(search_phrase, offset_score = 5):
     results = [exact_search(x, offset_score=offset_score) for x in search_phrase.split()]
     return _avg_results(results, len(results))
 
+def exact_search_n_words(search_phrase, n=2, offset_score = 5):
+
+    results = [exact_search(' '.join([word1, word2]), offset_score=offset_score) 
+               for word1, word2 in itertools.permutations(search_phrase.split(),n)]
+    return _avg_results(results, len(results))
+
 
 def _search(search_phrase):
     result = exact_search(search_phrase=search_phrase, offset_score=10)
     log.info(f"exact_search: {len(result[0])}")
+
+    result = _union_results( result, exact_search_n_words(search_phrase=search_phrase, n=2, offset_score=5))
+    log.info(f"after splitting search phrase into word pairs: {len(result[0])}")
     
-    result = _union_results( result, exact_search_words(search_phrase=search_phrase, offset_score=3))
-    log.info(f"after splitting search phrase: {len(result[0])}")
 
     result = _union_results(result, _api_call(search_phrase=search_phrase))
     log.info(f"after semantic search: {len(result[0])}")
+
+    if not len(result[0]):
+        result = _union_results( result, exact_search_words(search_phrase=search_phrase, offset_score=-5))
+        log.info(f"after splitting search phrase: {len(result[0])}")
 
     return _top_n_results(result)
 
